@@ -1,19 +1,27 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const { GoogleGenAI } = require('@google/genai');
 const { body, validationResult } = require('express-validator');
 const ContentGeneration = require('../models/ContentGeneration');
 
-const ai = new GoogleGenAI({ apiKey: process.env.apiKey || '' });
+const geminiApiKey = process.env.GEMINI_API_KEY;
+if (!geminiApiKey) {
+  throw new Error('GEMINI_API_KEY is missing. Add it to backend/.env before starting the server.');
+}
+
+const geminiModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const geminiMaxOutputTokens = parseInt(process.env.GEMINI_MAX_OUTPUT_TOKENS || '6144', 10);
+const ai = new GoogleGenAI({ apiKey: geminiApiKey });
 
 // ─── Helper: call Gemini API ───────────────────────────────────────────────
 async function callGemini(userPrompt, systemPrompt) {
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash-preview-09-2025',
+    model: geminiModel,
     contents: userPrompt,
     config: {
       systemInstruction: systemPrompt,
-      maxOutputTokens: 1024,
+      maxOutputTokens: geminiMaxOutputTokens,
     }
   });
   return response.text;
@@ -52,14 +60,18 @@ router.post(
         'You are a professional translation assistant. Provide direct, accurate translations without any commentary or explanations. Return only the translated text.'
       );
 
-      await ContentGeneration.create({
-        type: 'translation',
-        inputText: text,
-        outputText: result,
-        metadata: { targetLanguage },
-        ipAddress: req.ip,
-        processingTimeMs: Date.now() - start,
-      });
+      if (mongoose.connection.readyState === 1) {
+        await ContentGeneration.create({
+          type: 'translation',
+          inputText: text,
+          outputText: result,
+          metadata: { targetLanguage },
+          ipAddress: req.ip,
+          processingTimeMs: Date.now() - start,
+        });
+      } else {
+        console.warn('MongoDB not connected; skipping translation save.');
+      }
 
       res.json({ success: true, result });
     } catch (err) {
@@ -82,18 +94,22 @@ router.post(
     const start = Date.now();
     try {
       const result = await callGemini(
-        `Write a creative piece in ${language} based on the following idea:\n\n"${text}"`,
-        'You are a creative writing assistant. Write engaging, imaginative, and family-friendly content. Structure your response with clear paragraphs and use markdown for headings (**Heading**) and bullet points (* item) where appropriate.'
+        `Write a long-form creative piece in ${language} based on the following idea:\n\n"${text}". The output should be approximately 3000 words, richly detailed, and divided into clear paragraphs. Use natural, fluent language and avoid adding any commentary or labels beyond the content itself.`,
+        'You are a creative writing assistant. Write engaging, imaginative, and family-friendly content in a long-form format. Structure your response with clear paragraphs and provide a rich narrative or explanation that reaches approximately three thousand words. Do not include any markup or extraneous commentary.'
       );
 
-      await ContentGeneration.create({
-        type: 'creative',
-        inputText: text,
-        outputText: result,
-        metadata: { contentLanguage: language },
-        ipAddress: req.ip,
-        processingTimeMs: Date.now() - start,
-      });
+      if (mongoose.connection.readyState === 1) {
+        await ContentGeneration.create({
+          type: 'creative',
+          inputText: text,
+          outputText: result,
+          metadata: { contentLanguage: language },
+          ipAddress: req.ip,
+          processingTimeMs: Date.now() - start,
+        });
+      } else {
+        console.warn('MongoDB not connected; skipping creative save.');
+      }
 
       res.json({ success: true, result });
     } catch (err) {
@@ -113,13 +129,17 @@ router.post('/improve', validateText, handleValidation, async (req, res) => {
       'You are an expert editor. Return only the improved text without any commentary, explanations, or labels.'
     );
 
-    await ContentGeneration.create({
-      type: 'improve',
-      inputText: text,
-      outputText: result,
-      ipAddress: req.ip,
-      processingTimeMs: Date.now() - start,
-    });
+    if (mongoose.connection.readyState === 1) {
+      await ContentGeneration.create({
+        type: 'improve',
+        inputText: text,
+        outputText: result,
+        ipAddress: req.ip,
+        processingTimeMs: Date.now() - start,
+      });
+    } else {
+      console.warn('MongoDB not connected; skipping improve save.');
+    }
 
     res.json({ success: true, result });
   } catch (err) {
@@ -146,19 +166,23 @@ router.post('/quote', validateText, handleValidation, async (req, res) => {
     const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
     const estimatedCost = parseFloat((wordCount * parsed.pricePerWord).toFixed(2));
 
-    await ContentGeneration.create({
-      type: 'quote',
-      inputText: text,
-      outputText: JSON.stringify(parsed),
-      metadata: {
-        wordCount,
-        pricePerWord: parsed.pricePerWord,
-        estimatedCost,
-        deliveryDays: parsed.deliveryDays,
-      },
-      ipAddress: req.ip,
-      processingTimeMs: Date.now() - start,
-    });
+    if (mongoose.connection.readyState === 1) {
+      await ContentGeneration.create({
+        type: 'quote',
+        inputText: text,
+        outputText: JSON.stringify(parsed),
+        metadata: {
+          wordCount,
+          pricePerWord: parsed.pricePerWord,
+          estimatedCost,
+          deliveryDays: parsed.deliveryDays,
+        },
+        ipAddress: req.ip,
+        processingTimeMs: Date.now() - start,
+      });
+    } else {
+      console.warn('MongoDB not connected; skipping quote save.');
+    }
 
     res.json({
       success: true,

@@ -72,13 +72,13 @@ export default function App() {
         <SectionWrapper>
           <SectionHeader
             title="AI Creative Content Generator"
-            desc="Describe your idea and let AI craft a compelling, imaginative piece in the language of your choice."
+            desc="Describe your idea and let AI craft a compelling, imaginative long-form piece of about 3000 words in the language of your choice."
           />
           <AIFormCard
             id="creative"
             title=""
             description=""
-            placeholder="Describe your creative idea (e.g. 'A short story about a robot learning to paint')…"
+            placeholder="Describe your creative idea (e.g. 'A long-form article about the future of AI and society')…"
             submitLabel="Generate Content"
             extraField={{ label: 'Output Language', options: LANGUAGES }}
             onSubmit={(text, language) => generateCreativeContent(text, language || LANGUAGES[20]).then(d => d.result)}

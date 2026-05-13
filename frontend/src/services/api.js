@@ -13,16 +13,16 @@ export const translateText = async (text, targetLanguage) => {
     return response.data;
   } catch (error) {
     // fallback for local UI dev without API key
-    return { result: `⚠️ Real generation failed. Please add your ANTHROPIC_API_KEY to the backend .env file to see actual results!` };
+    return { result: `⚠️ Real generation failed. Please add your GEMINI_API_KEY to the backend .env file to see actual results!` };
   }
 };
 
 export const generateCreativeContent = async (text, language) => {
   try {
-    const response = await api.post('/ai/creative', { prompt: text, language });
+    const response = await api.post('/ai/creative', { text, language });
     return response.data;
   } catch (error) {
-    return { result: `⚠️ Real generation failed. Please add your ANTHROPIC_API_KEY to the backend .env file to see actual results!` };
+    return { result: `⚠️ Real generation failed. Please add your GEMINI_API_KEY to the backend .env file to see actual results!` };
   }
 };
 

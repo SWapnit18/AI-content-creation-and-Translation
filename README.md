@@ -1,102 +1,202 @@
-# AI Creative Content & Translation System
+# AI Content Creation Platform
 
-A full-stack web application for AI-powered translation, creative content generation, and writing improvement — built with **React**, **Node.js**, **Express.js**, and **MongoDB**.
+A full-stack web application for AI-powered content creation, translation, and writing improvement. Built with React, Node.js, Express.js, and MongoDB, featuring Google's Gemini AI for intelligent content generation.
 
----
+## 🚀 Features
 
-## 🏗️ Architecture
+- **AI Translation**: Professional text translation across multiple languages
+- **Creative Writing**: Generate long-form creative content from prompts
+- **Text Enhancement**: Improve writing for clarity and professionalism
+- **Project Quoting**: Instant cost estimation for translation projects
+- **Content History**: Track and review past AI generations
+- **Contact Management**: Handle customer inquiries
+- **Rate Limiting**: Built-in API protection
+- **Responsive Design**: Mobile-friendly interface
+- **Real-time Notifications**: User feedback with toast messages
+
+## 🛠 Tech Stack
+
+### Frontend
+- **React 19** - Modern UI framework
+- **Vite** - Fast development and build tool
+- **React Router** - Client-side routing
+- **Axios** - HTTP client
+- **React Hot Toast** - Notifications
+- **Lucide React** - Icon library
+- **CSS** - Custom styling with responsive design
+
+### Backend
+- **Node.js** - Runtime environment
+- **Express.js** - Web framework
+- **Google Gemini AI** - AI content generation
+- **MongoDB** - Database for data persistence
+- **Express Rate Limit** - API protection
+- **Helmet** - Security middleware
+- **CORS** - Cross-origin handling
+- **Express Validator** - Input validation
+
+## 📋 Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- MongoDB (local or MongoDB Atlas)
+- Google Gemini API key
+
+## 🚀 Getting Started
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd ai-content-creation
+   ```
+
+2. **Backend Setup**
+   ```bash
+   cd backend
+   npm install
+   cp .env.example .env  # Configure your environment variables
+   npm start
+   ```
+
+3. **Frontend Setup** (in a new terminal)
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+4. **Access the application**
+   - Frontend: `http://localhost:5173`
+   - Backend API: `http://localhost:5000`
+
+## 🔧 Configuration
+
+### Environment Variables (Backend)
+
+Create a `.env` file in the `backend` directory:
+
+```env
+GEMINI_API_KEY=your_google_gemini_api_key_here
+MONGO_URI=mongodb://localhost:27017/ai-content-creation
+# or for MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/ai-content-creation
+PORT=5000
+NODE_ENV=development
+CLIENT_URL=http://localhost:5173
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MAX_OUTPUT_TOKENS=6144
+```
+
+## 📁 Project Structure
 
 ```
-ai-creative-content/
-├── backend/                  # Node.js + Express API
+ai-content-creation/
+├── backend/                  # Node.js API server
 │   ├── config/
-│   │   └── db.js             # MongoDB connection
+│   │   └── db.js            # MongoDB connection
 │   ├── middleware/
-│   │   └── rateLimiter.js    # Rate limiting
+│   │   └── rateLimiter.js   # Rate limiting logic
 │   ├── models/
-│   │   ├── ContentGeneration.js  # AI output storage
-│   │   └── Contact.js            # Contact form submissions
+│   │   ├── ContentGeneration.js  # AI content schema
+│   │   └── Contact.js       # Contact form schema
 │   ├── routes/
-│   │   ├── aiRoutes.js       # /api/ai/* endpoints
-│   │   └── contactRoutes.js  # /api/contact endpoint
-│   ├── server.js             # Express entry point
-│   ├── .env.example
+│   │   ├── aiRoutes.js      # AI service endpoints
+│   │   └── contactRoutes.js # Contact endpoints
+│   ├── server.js            # Express app entry
+│   ├── .env                 # Environment variables
 │   └── package.json
 │
 └── frontend/                 # React SPA
     ├── public/
-    │   └── index.html
+    │   └── index.html       # HTML template
     ├── src/
-    │   ├── components/
-    │   │   ├── Navbar.jsx
-    │   │   ├── Hero.jsx
-    │   │   ├── Services.jsx
-    │   │   ├── AIFormCard.jsx    # Reusable AI form widget
-    │   │   ├── QuoteSection.jsx  # Project cost estimator
-    │   │   └── Contact.jsx
+    │   ├── components/      # UI components
+    │   │   ├── AIFormCard.jsx    # AI service forms
+    │   │   ├── Contact.jsx       # Contact form
+    │   │   ├── Hero.jsx          # Landing hero
+    │   │   ├── Navbar.jsx        # Navigation
+    │   │   ├── QuoteSection.jsx  # Pricing section
+    │   │   └── Services.jsx      # Services overview
     │   ├── context/
-    │   │   └── ThemeContext.jsx  # Dark/light mode
-    │   ├── hooks/
-    │   │   └── useAI.js          # Reusable AI hook
+    │   │   └── ThemeContext.jsx  # Theme provider
     │   ├── services/
-    │   │   └── api.js            # Axios API layer
+    │   │   └── api.js            # API client
     │   ├── styles/
-    │   │   └── index.css
-    │   ├── App.jsx
-    │   └── index.jsx
-    └── package.json
+    │   │   └── index.css         # Global styles
+    │   ├── App.jsx               # Main app
+    │   └── main.jsx              # App entry
+    ├── package.json
+    ├── vite.config.js            # Vite config
+    └── eslint.config.js          # ESLint config
 ```
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+
-- MongoDB (local or [MongoDB Atlas](https://www.mongodb.com/atlas))
-- Anthropic API key → [console.anthropic.com](https://console.anthropic.com)
-
-### 1. Backend Setup
-
-```bash
-cd backend
-cp .env.example .env
-# Fill in MONGO_URI and ANTHROPIC_API_KEY in .env
-npm install
-npm run dev          # starts on http://localhost:5000
-```
-
-### 2. Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm start            # starts on http://localhost:3000
-```
-
-The React app proxies `/api/*` requests to `localhost:5000` automatically.
-
----
 
 ## 🔌 API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/ai/translate` | Translate text to any language |
-| POST | `/api/ai/creative` | Generate creative content |
-| POST | `/api/ai/improve` | Improve writing quality |
-| POST | `/api/ai/quote` | Analyze project & estimate cost |
-| GET | `/api/ai/history` | Retrieve past generations |
-| POST | `/api/contact` | Submit contact form |
-| GET | `/api/contact` | List contact submissions (admin) |
-| GET | `/api/health` | Server health check |
+### AI Services
+- `POST /api/ai/translate` - Translate text
+- `POST /api/ai/creative` - Generate creative content
+- `POST /api/ai/improve` - Improve text quality
+- `POST /api/ai/quote` - Get project quote
+- `GET /api/ai/history` - View generation history
 
-### Example request — Translation
+### Contact
+- `POST /api/contact` - Submit contact form
+
+### Health
+- `GET /api/health` - Server status check
+
+### Example API Usage
+
 ```bash
+# Translation
 curl -X POST http://localhost:5000/api/ai/translate \
   -H "Content-Type: application/json" \
-  -d '{"text": "Hello, world!", "targetLanguage": "French"}'
+  -d '{"text": "Hello world", "targetLanguage": "Spanish"}'
+
+# Creative Writing
+curl -X POST http://localhost:5000/api/ai/creative \
+  -H "Content-Type: application/json" \
+  -d '{"text": "A story about space exploration", "language": "English"}'
 ```
+
+## 🚀 Deployment
+
+### Frontend
+1. Build for production: `npm run build`
+2. Deploy to static hosting (Netlify, Vercel, GitHub Pages)
+3. Update API base URL to production backend
+
+### Backend
+Deploy to cloud platforms:
+- **Heroku**: `git push heroku main`
+- **Railway**: Connect GitHub repo
+- **Vercel**: Use serverless functions
+- **AWS/DigitalOcean**: Container deployment
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/new-feature`
+3. Commit changes: `git commit -m 'Add new feature'`
+4. Push branch: `git push origin feature/new-feature`
+5. Submit pull request
+
+## 📝 License
+
+ISC License - see LICENSE file for details.
+
+## 📞 Support
+
+For issues or questions:
+- Create GitHub issue
+- Email: support@aicontentcreation.com
+
+## 🙏 Acknowledgments
+
+- Google Gemini AI team
+- React and Node.js communities
+- Open source contributors
 
 ---
 
