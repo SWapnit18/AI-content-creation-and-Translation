@@ -14,7 +14,7 @@ A full-stack web application for AI-powered content creation, translation, and w
 - **Responsive Design**: Mobile-friendly interface
 - **Real-time Notifications**: User feedback with toast messages
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 ### Frontend
 - **React 19** - Modern UI framework
@@ -35,7 +35,7 @@ A full-stack web application for AI-powered content creation, translation, and w
 - **CORS** - Cross-origin handling
 - **Express Validator** - Input validation
 
-## 📋 Prerequisites
+##  Prerequisites
 
 - Node.js (v16 or higher)
 - npm or yarn
