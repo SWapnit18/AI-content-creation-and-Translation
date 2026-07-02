@@ -2,7 +2,7 @@
 
 A full-stack web application for AI-powered content creation, translation, and writing improvement. Built with React, Node.js, Express.js, and MongoDB, featuring Google's Gemini AI for intelligent content generation.
 
-## 🚀 Features
+##  Features
 
 - **AI Translation**: Professional text translation across multiple languages
 - **Creative Writing**: Generate long-form creative content from prompts
