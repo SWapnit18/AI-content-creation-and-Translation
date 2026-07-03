@@ -6,16 +6,21 @@ const { body, validationResult } = require('express-validator');
 const ContentGeneration = require('../models/ContentGeneration');
 
 const geminiApiKey = process.env.GEMINI_API_KEY;
-if (!geminiApiKey) {
-  throw new Error('GEMINI_API_KEY is missing. Add it to backend/.env before starting the server.');
-}
-
 const geminiModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const geminiMaxOutputTokens = parseInt(process.env.GEMINI_MAX_OUTPUT_TOKENS || '4096', 10);
-const ai = new GoogleGenAI({ apiKey: geminiApiKey });
+
+let ai = null;
+if (geminiApiKey) {
+  ai = new GoogleGenAI({ apiKey: geminiApiKey });
+} else {
+  console.warn('⚠️ GEMINI_API_KEY is missing. AI features will return a configuration error.');
+}
 
 // ─── Helper: call Gemini API ───────────────────────────────────────────────
 async function callGemini(userPrompt, systemPrompt, maxTokens) {
+  if (!ai) {
+    throw new Error('GEMINI_API_KEY is not configured on the server. Please add it to your Vercel project environment variables.');
+  }
   const response = await ai.models.generateContent({
     model: geminiModel,
     contents: userPrompt,
