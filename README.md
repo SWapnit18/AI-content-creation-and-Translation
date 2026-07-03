@@ -44,7 +44,7 @@ A full-stack web application for AI-powered content creation, translation, and w
 - MongoDB (local or MongoDB Atlas)
 - Google Gemini API key
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Installation
 

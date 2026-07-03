@@ -11,17 +11,17 @@ if (!geminiApiKey) {
 }
 
 const geminiModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-const geminiMaxOutputTokens = parseInt(process.env.GEMINI_MAX_OUTPUT_TOKENS || '6144', 10);
+const geminiMaxOutputTokens = parseInt(process.env.GEMINI_MAX_OUTPUT_TOKENS || '4096', 10);
 const ai = new GoogleGenAI({ apiKey: geminiApiKey });
 
 // ─── Helper: call Gemini API ───────────────────────────────────────────────
-async function callGemini(userPrompt, systemPrompt) {
+async function callGemini(userPrompt, systemPrompt, maxTokens) {
   const response = await ai.models.generateContent({
     model: geminiModel,
     contents: userPrompt,
     config: {
       systemInstruction: systemPrompt,
-      maxOutputTokens: geminiMaxOutputTokens,
+      maxOutputTokens: maxTokens || geminiMaxOutputTokens,
     }
   });
   return response.text;
@@ -57,7 +57,8 @@ router.post(
     try {
       const result = await callGemini(
         `Translate the following text into ${targetLanguage}:\n\n"${text}"`,
-        'You are a professional translation assistant. Provide direct, accurate translations without any commentary or explanations. Return only the translated text.'
+        'You are a professional translation assistant. Provide direct, accurate translations without any commentary or explanations. Return only the translated text.',
+        1024
       );
 
       if (mongoose.connection.readyState === 1) {
@@ -126,7 +127,8 @@ router.post('/improve', validateText, handleValidation, async (req, res) => {
   try {
     const result = await callGemini(
       `Improve the following text for clarity, grammar, and professionalism:\n\n"${text}"`,
-      'You are an expert editor. Return only the improved text without any commentary, explanations, or labels.'
+      'You are an expert editor. Return only the improved text without any commentary, explanations, or labels.',
+      2048
     );
 
     if (mongoose.connection.readyState === 1) {

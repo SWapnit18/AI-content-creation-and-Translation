@@ -15,9 +15,9 @@ import './styles/index.css';
 
 // Language options
 const LANGUAGES = [
-  'Afrikaans','Albanian','Amharic','Arabic','Armenian','Bengali','Bulgarian',
+  'English','Afrikaans','Albanian','Amharic','Arabic','Armenian','Bengali','Bulgarian',
   'Catalan','Chinese (Simplified)','Chinese (Traditional)','Croatian','Czech',
-  'Danish','Dutch','English','Finnish','French','German','Greek','Gujarati',
+  'Danish','Dutch','Finnish','French','German','Greek','Gujarati',
   'Hebrew','Hindi','Hungarian','Indonesian','Italian','Japanese','Kannada',
   'Korean','Latvian','Lithuanian','Malay','Malayalam','Marathi','Nepali',
   'Norwegian','Persian','Polish','Portuguese','Punjabi','Romanian','Russian',

@@ -31,7 +31,7 @@ export const improveWriting = async (text) => {
     const response = await api.post('/ai/improve', { text });
     return response.data;
   } catch (error) {
-    return { result: `⚠️ Real generation failed. Please add your ANTHROPIC_API_KEY to the backend .env file to see actual results!` };
+    return { result: `⚠️ Real generation failed. Please add your GEMINI_API_KEY to the backend .env file to see actual results!` };
   }
 };
 
