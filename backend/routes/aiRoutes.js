@@ -10,7 +10,7 @@ const geminiMaxOutputTokens = parseInt(process.env.GEMINI_MAX_OUTPUT_TOKENS || '
 
 // Helper to get or create GoogleGenAI instance dynamically
 function getAI() {
-  const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyAvK_k27zUcF6Ry0SkbhdRMxiGvKreL5Ok';
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY is not configured on the server. Please add it to your environment variables.');
   }
