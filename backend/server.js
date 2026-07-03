@@ -27,7 +27,13 @@ const allowedOrigins = [
 ];
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (
+      !origin || 
+      allowedOrigins.includes(origin) || 
+      origin.endsWith('.vercel.app') || 
+      origin.includes('vercel.app') ||
+      process.env.VERCEL === '1'
+    ) {
       return callback(null, true);
     }
     callback(new Error('CORS policy does not allow access from this origin'));
