@@ -95,8 +95,9 @@ router.post(
     const start = Date.now();
     try {
       const result = await callGemini(
-        `Write a long-form creative piece in ${language} based on the following idea:\n\n"${text}". The output should be approximately 3000 words, richly detailed, and divided into clear paragraphs. Use natural, fluent language and avoid adding any commentary or labels beyond the content itself.`,
-        'You are a creative writing assistant. Write engaging, imaginative, and family-friendly content in a long-form format. Structure your response with clear paragraphs and provide a rich narrative or explanation that reaches approximately three thousand words. Do not include any markup or extraneous commentary.'
+        `Write an engaging creative piece in ${language} based on the following idea:\n\n"${text}". The output should be approximately 300 to 500 words, detailed, and divided into clear paragraphs. Use natural, fluent language and avoid adding any commentary or labels beyond the content itself.`,
+        'You are a creative writing assistant. Write engaging, imaginative, and family-friendly content. Structure your response with clear paragraphs and provide a narrative or explanation that is approximately 300 to 500 words. Do not include any markup or extraneous commentary.',
+        1024
       );
 
       if (mongoose.connection.readyState === 1) {
@@ -128,7 +129,7 @@ router.post('/improve', validateText, handleValidation, async (req, res) => {
     const result = await callGemini(
       `Improve the following text for clarity, grammar, and professionalism:\n\n"${text}"`,
       'You are an expert editor. Return only the improved text without any commentary, explanations, or labels.',
-      2048
+      1024
     );
 
     if (mongoose.connection.readyState === 1) {
@@ -157,7 +158,8 @@ router.post('/quote', validateText, handleValidation, async (req, res) => {
   try {
     const result = await callGemini(
       `Analyze the following text for a translation project quote. Consider its complexity (technical, legal, or casual), subject matter, and word count. Return ONLY a valid JSON object with keys "pricePerWord" (number between 0.10 and 0.25) and "deliveryDays" (string like "2-3 business days"). No markdown, no extra text.\n\nText: "${text}"`,
-      'You are a project analysis bot. You only respond in valid JSON format with no markdown or extra text.'
+      'You are a project analysis bot. You only respond in valid JSON format with no markdown or extra text.',
+      512
     );
 
     // Parse JSON from Claude response
