@@ -2,7 +2,7 @@
 
 A full-stack web application for AI-powered content creation, translation, and writing improvement. Built with React, Node.js, Express.js, and MongoDB, featuring Google's Gemini AI for intelligent content generation.
 
-##  Features
+## Features
 
 - **AI Translation**: Professional text translation across multiple languages
 - **Creative Writing**: Generate long-form creative content from prompts
@@ -14,9 +14,10 @@ A full-stack web application for AI-powered content creation, translation, and w
 - **Responsive Design**: Mobile-friendly interface
 - **Real-time Notifications**: User feedback with toast messages
 
-##  Tech Stack
+## Tech Stack
 
 ### Frontend
+
 - **React 19** - Modern UI framework
 - **Vite** - Fast development and build tool
 - **React Router** - Client-side routing
@@ -26,6 +27,7 @@ A full-stack web application for AI-powered content creation, translation, and w
 - **CSS** - Custom styling with responsive design
 
 ### Backend
+
 - **Node.js** - Runtime environment
 - **Express.js** - Web framework
 - **Google Gemini AI** - AI content generation
@@ -35,7 +37,7 @@ A full-stack web application for AI-powered content creation, translation, and w
 - **CORS** - Cross-origin handling
 - **Express Validator** - Input validation
 
-##  Prerequisites
+## Prerequisites
 
 - Node.js (v16 or higher)
 - npm or yarn
@@ -47,12 +49,14 @@ A full-stack web application for AI-powered content creation, translation, and w
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <your-repo-url>
    cd ai-content-creation
    ```
 
 2. **Backend Setup**
+
    ```bash
    cd backend
    npm install
@@ -61,13 +65,20 @@ A full-stack web application for AI-powered content creation, translation, and w
    ```
 
 3. **Frontend Setup** (in a new terminal)
+
    ```bash
    cd frontend
    npm install
    npm run dev
    ```
 
-4. **Access the application**
+Alternatively, from the workspace root you can start both servers together:
+
+   ```bash
+   npm run dev
+   ```
+
+1. **Access the application**
    - Frontend: `http://localhost:5173`
    - Backend API: `http://localhost:5000`
 
@@ -80,7 +91,7 @@ Create a `.env` file in the `backend` directory:
 ```env
 GEMINI_API_KEY=your_google_gemini_api_key_here
 MONGO_URI=mongodb://localhost:27017/ai-content-creation
-# or for MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net?????????????/ai-content-creation
+# or for MongoDB Atlas: mongodb+srv://<username>:<password>@<cluster-name>.mongodb.net/<database-name>?retryWrites=true&w=majority
 PORT=5000
 NODE_ENV=development
 CLIENT_URL=http://localhost:5173
@@ -88,7 +99,7 @@ GEMINI_MODEL=gemini-2.5-flash
 GEMINI_MAX_OUTPUT_TOKENS=6144
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ai-content-creation/
@@ -134,6 +145,7 @@ ai-content-creation/
 ## 🔌 API Endpoints
 
 ### AI Services
+
 - `POST /api/ai/translate` - Translate text
 - `POST /api/ai/creative` - Generate creative content
 - `POST /api/ai/improve` - Improve text quality
@@ -141,9 +153,11 @@ ai-content-creation/
 - `GET /api/ai/history` - View generation history
 
 ### Contact
+
 - `POST /api/contact` - Submit contact form
 
 ### Health
+
 - `GET /api/health` - Server status check
 
 ### Example API Usage
@@ -160,21 +174,24 @@ curl -X POST http://localhost:5000/api/ai/creative \
   -d '{"text": "A story about space exploration", "language": "English"}'
 ```
 
-## 🚀 Deployment
+## Deployment
 
 ### Frontend
+
 1. Build for production: `npm run build`
 2. Deploy to static hosting (Netlify, Vercel, GitHub Pages)
 3. Update API base URL to production backend
 
 ### Backend
+
 Deploy to cloud platforms:
+
 - **Heroku**: `git push heroku main`
 - **Railway**: Connect GitHub repo
 - **Vercel**: Use serverless functions
 - **AWS/DigitalOcean**: Container deployment
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create feature branch: `git checkout -b feature/new-feature`
@@ -182,17 +199,18 @@ Deploy to cloud platforms:
 4. Push branch: `git push origin feature/new-feature`
 5. Submit pull request
 
-## 📝 License
+## License
 
 ISC License - see LICENSE file for details.
 
-## 📞 Support
+## Support
 
 For issues or questions:
-- Create GitHub issue
-- Email: support@aicontentcreation.com
 
-## 🙏 Acknowledgments
+- Create GitHub issue
+- Email: <support@aicontentcreation.com>
+
+## Acknowledgments
 
 - Google Gemini AI team
 - React and Node.js communities
@@ -200,17 +218,20 @@ For issues or questions:
 
 ---
 
-## 🗄️ MongoDB Collections
+## MongoDB Collections
 
 ### `contentgenerations`
+
 Stores every AI-generated output with type (`translation`, `creative`, `improve`, `quote`), input text, output, metadata, IP, and processing time.
 
 ### `contacts`
+
 Stores contact form submissions with name, email, subject, message, and status (`new` → `read` → `replied` → `archived`).
 
 ---
 
-## 🔒 Security Features
+## Security Features
+
 - **Helmet** — HTTP security headers
 - **CORS** — restricted to frontend origin
 - **Rate limiting** — 10 AI req/min per IP, 5 contact submissions/hour
@@ -219,10 +240,12 @@ Stores contact form submissions with name, email, subject, message, and status (
 
 ---
 
-## 🌐 Deployment
+## Deployment
 
 ### Backend (Railway / Render / Fly.io)
+
 Set environment variables: `MONGO_URI`, `ANTHROPIC_API_KEY`, `CLIENT_URL`, `NODE_ENV=production`
 
 ### Frontend (Vercel / Netlify)
+
 Set `REACT_APP_API_URL` to your deployed backend URL and update the `proxy` in `package.json`.
