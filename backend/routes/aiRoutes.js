@@ -5,23 +5,22 @@ const { GoogleGenAI } = require('@google/genai');
 const { body, validationResult } = require('express-validator');
 const ContentGeneration = require('../models/ContentGeneration');
 
-const geminiApiKey = process.env.GEMINI_API_KEY;
 const geminiModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const geminiMaxOutputTokens = parseInt(process.env.GEMINI_MAX_OUTPUT_TOKENS || '4096', 10);
 
-let ai = null;
-if (geminiApiKey) {
-  ai = new GoogleGenAI({ apiKey: geminiApiKey });
-} else {
-  console.warn('⚠️ GEMINI_API_KEY is missing. AI features will return a configuration error.');
+// Helper to get or create GoogleGenAI instance dynamically
+function getAI() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not configured on the server. Please add it to your environment variables.');
+  }
+  return new GoogleGenAI({ apiKey });
 }
 
 // ─── Helper: call Gemini API ───────────────────────────────────────────────
 async function callGemini(userPrompt, systemPrompt, maxTokens) {
-  if (!ai) {
-    throw new Error('GEMINI_API_KEY is not configured on the server. Please add it to your Vercel project environment variables.');
-  }
-  const response = await ai.models.generateContent({
+  const aiInstance = getAI();
+  const response = await aiInstance.models.generateContent({
     model: geminiModel,
     contents: userPrompt,
     config: {
@@ -67,14 +66,14 @@ router.post(
       );
 
       if (mongoose.connection.readyState === 1) {
-        await ContentGeneration.create({
+        ContentGeneration.create({
           type: 'translation',
           inputText: text,
           outputText: result,
           metadata: { targetLanguage },
           ipAddress: req.ip,
           processingTimeMs: Date.now() - start,
-        });
+        }).catch(err => console.error('Failed to save translation log:', err));
       } else {
         console.warn('MongoDB not connected; skipping translation save.');
       }
@@ -82,7 +81,10 @@ router.post(
       res.json({ success: true, result });
     } catch (err) {
       console.error('Translation error:', err.message);
-      res.status(500).json({ success: false, message: 'Translation failed. Please try again.' });
+      res.json({
+        success: false,
+        result: `⚠️ Real generation failed. Please add your GEMINI_API_KEY to the backend .env file to see actual results! (${err.message})`
+      });
     }
   }
 );
@@ -106,14 +108,14 @@ router.post(
       );
 
       if (mongoose.connection.readyState === 1) {
-        await ContentGeneration.create({
+        ContentGeneration.create({
           type: 'creative',
           inputText: text,
           outputText: result,
           metadata: { contentLanguage: language },
           ipAddress: req.ip,
           processingTimeMs: Date.now() - start,
-        });
+        }).catch(err => console.error('Failed to save creative log:', err));
       } else {
         console.warn('MongoDB not connected; skipping creative save.');
       }
@@ -121,7 +123,10 @@ router.post(
       res.json({ success: true, result });
     } catch (err) {
       console.error('Creative generation error:', err.message);
-      res.status(500).json({ success: false, message: 'Content generation failed. Please try again.' });
+      res.json({
+        success: false,
+        result: `⚠️ Real generation failed. Please add your GEMINI_API_KEY to the backend .env file to see actual results! (${err.message})`
+      });
     }
   }
 );
@@ -138,13 +143,13 @@ router.post('/improve', validateText, handleValidation, async (req, res) => {
     );
 
     if (mongoose.connection.readyState === 1) {
-      await ContentGeneration.create({
+      ContentGeneration.create({
         type: 'improve',
         inputText: text,
         outputText: result,
         ipAddress: req.ip,
         processingTimeMs: Date.now() - start,
-      });
+      }).catch(err => console.error('Failed to save improve log:', err));
     } else {
       console.warn('MongoDB not connected; skipping improve save.');
     }
@@ -152,7 +157,10 @@ router.post('/improve', validateText, handleValidation, async (req, res) => {
     res.json({ success: true, result });
   } catch (err) {
     console.error('Improve error:', err.message);
-    res.status(500).json({ success: false, message: 'Writing improvement failed. Please try again.' });
+    res.json({
+      success: false,
+      result: `⚠️ Real generation failed. Please add your GEMINI_API_KEY to the backend .env file to see actual results! (${err.message})`
+    });
   }
 });
 
@@ -176,7 +184,7 @@ router.post('/quote', validateText, handleValidation, async (req, res) => {
     const estimatedCost = parseFloat((wordCount * parsed.pricePerWord).toFixed(2));
 
     if (mongoose.connection.readyState === 1) {
-      await ContentGeneration.create({
+      ContentGeneration.create({
         type: 'quote',
         inputText: text,
         outputText: JSON.stringify(parsed),
@@ -188,7 +196,7 @@ router.post('/quote', validateText, handleValidation, async (req, res) => {
         },
         ipAddress: req.ip,
         processingTimeMs: Date.now() - start,
-      });
+      }).catch(err => console.error('Failed to save quote log:', err));
     } else {
       console.warn('MongoDB not connected; skipping quote save.');
     }
@@ -202,7 +210,7 @@ router.post('/quote', validateText, handleValidation, async (req, res) => {
     });
   } catch (err) {
     console.error('Quote error:', err.message);
-    res.status(500).json({ success: false, message: 'Quote analysis failed. Please try again.' });
+    res.json({ success: false, message: `Quote analysis failed: ${err.message}` });
   }
 });
 
@@ -228,7 +236,7 @@ router.get('/history', async (req, res) => {
       pagination: { total, page: parseInt(page), limit: parseInt(limit), pages: Math.ceil(total / limit) },
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Failed to fetch history' });
+    res.json({ success: false, message: `Failed to fetch history: ${err.message}` });
   }
 });
 
