@@ -1,5 +1,6 @@
 import React from 'react';
 import { Toaster } from 'react-hot-toast';
+import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from './context/ThemeContext';
 
 import Navbar from './components/Navbar';
@@ -46,6 +47,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <Toaster position="top-right" toastOptions={{ style: { background: 'var(--bg-card)', color: 'var(--text-heading)', border: '1px solid var(--border)' } }} />
+      <Analytics />
       <Navbar />
       <main>
         <Hero />
