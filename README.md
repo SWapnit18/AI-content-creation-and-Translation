@@ -80,7 +80,7 @@ Create a `.env` file in the `backend` directory:
 ```env
 GEMINI_API_KEY=your_google_gemini_api_key_here
 MONGO_URI=mongodb://localhost:27017/ai-content-creation
-# or for MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/ai-content-creation
+# or for MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net?????????????/ai-content-creation
 PORT=5000
 NODE_ENV=development
 CLIENT_URL=http://localhost:5173
