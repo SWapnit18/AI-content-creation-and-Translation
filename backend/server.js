@@ -1,5 +1,6 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
+process.env.MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
