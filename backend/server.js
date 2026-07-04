@@ -14,6 +14,9 @@ const { apiLimiter, aiLimiter, contactLimiter } = require('./middleware/rateLimi
 
 const app = express();
 
+// Trust proxy for Vercel rate limiting (prevents shared global 429)
+app.set('trust proxy', 1);
+
 // ─── Connect to MongoDB ────────────────────────────────────────────────────
 connectDB();
 
