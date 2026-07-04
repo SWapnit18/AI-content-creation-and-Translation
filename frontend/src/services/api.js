@@ -11,7 +11,7 @@ const api = axios.create({
 // Request interceptor to inject JWT token into requests
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -84,6 +84,16 @@ export const forgotPassword = async (email) => {
 
 export const resetPassword = async (token, password) => {
   const response = await api.post(`/auth/resetpassword/${token}`, { password });
+  return response.data;
+};
+
+export const verifyEmail = async (token) => {
+  const response = await api.get(`/auth/verify/${token}`);
+  return response.data;
+};
+
+export const resendVerification = async () => {
+  const response = await api.post('/auth/resend-verification');
   return response.data;
 };
 

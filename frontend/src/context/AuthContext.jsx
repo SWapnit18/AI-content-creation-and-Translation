@@ -10,7 +10,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const loadUser = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       if (token) {
         try {
           const res = await getMe();
@@ -18,11 +18,13 @@ export function AuthProvider({ children }) {
             setUser(res.user);
           } else {
             localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
             setUser(null);
           }
         } catch (error) {
           console.error('Failed to load user info:', error);
           localStorage.removeItem('token');
+          sessionStorage.removeItem('token');
           setUser(null);
         }
       }
@@ -32,11 +34,15 @@ export function AuthProvider({ children }) {
     loadUser();
   }, []);
 
-  const signup = async (name, email, password) => {
+  const signup = async (name, email, password, rememberMe = true) => {
     try {
       const res = await signupUser(name, email, password);
       if (res.success) {
-        localStorage.setItem('token', res.token);
+        if (rememberMe) {
+          localStorage.setItem('token', res.token);
+        } else {
+          sessionStorage.setItem('token', res.token);
+        }
         setUser(res.user);
         toast.success(`Welcome, ${res.user.name}!`);
         return true;
@@ -47,11 +53,15 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email, password, rememberMe = true) => {
     try {
       const res = await loginUser(email, password);
       if (res.success) {
-        localStorage.setItem('token', res.token);
+        if (rememberMe) {
+          localStorage.setItem('token', res.token);
+        } else {
+          sessionStorage.setItem('token', res.token);
+        }
         setUser(res.user);
         toast.success(`Welcome back, ${res.user.name}!`);
         return true;
@@ -64,14 +74,33 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
     setUser(null);
     toast.success('Logged out successfully');
   };
 
-  const loginWithToken = (token, userData) => {
-    localStorage.setItem('token', token);
+  const loginWithToken = (token, userData, rememberMe = true) => {
+    if (rememberMe) {
+      localStorage.setItem('token', token);
+    } else {
+      sessionStorage.setItem('token', token);
+    }
     setUser(userData);
     toast.success(`Welcome back, ${userData.name}!`);
+  };
+
+  const refreshUser = async () => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (token) {
+      try {
+        const res = await getMe();
+        if (res.success) {
+          setUser(res.user);
+        }
+      } catch (error) {
+        console.error('Failed to refresh user:', error);
+      }
+    }
   };
 
   return (
@@ -83,6 +112,7 @@ export function AuthProvider({ children }) {
         login,
         logout,
         loginWithToken,
+        refreshUser,
         isAuthenticated: !!user,
       }}
     >

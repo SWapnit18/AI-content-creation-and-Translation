@@ -45,25 +45,69 @@ router.post(
         return res.status(400).json({ success: false, message: 'User already exists' });
       }
 
+      // Generate verification token
+      const verificationToken = crypto.randomBytes(20).toString('hex');
+
       // Create new user
       const user = await User.create({
         name,
         email,
         password,
+        verificationToken,
       });
 
       // Generate token
       const token = generateToken(user._id);
 
-      res.status(201).json({
+      // Determine client URL dynamically
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+      const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5173';
+      const clientUrl = `${protocol}://${host}`;
+      const verifyUrl = `${clientUrl}?verifyToken=${verificationToken}`;
+
+      // Email message details
+      const subject = 'Verify Your Email - WordFlow Global';
+      const message = `Welcome to WordFlow Global!\n\nPlease verify your email address by clicking on the link below, or pasting it into your browser:\n\n${verifyUrl}\n`;
+      const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h2 style="color: #6366f1; text-align: center;">Welcome to WordFlow Global!</h2>
+          <p>Hello ${user.name},</p>
+          <p>Thank you for signing up! Please verify your email address by clicking the button below:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verifyUrl}" style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Verify Email</a>
+          </div>
+          <p style="color: #64748b; font-size: 0.85rem; word-break: break-all;">If the button doesn't work, copy and paste this link into your browser:<br>${verifyUrl}</p>
+          <p style="color: #94a3b8; font-size: 0.8rem; border-top: 1px solid #f1f5f9; padding-top: 15px; margin-top: 25px;">If you did not sign up for this account, you can safely ignore this email.</p>
+        </div>
+      `;
+
+      // Send email
+      const emailResult = await sendEmail({
+        email: user.email,
+        subject,
+        message,
+        html,
+      });
+
+      const response = {
         success: true,
         token,
         user: {
           id: user._id,
           name: user.name,
           email: user.email,
+          isVerified: false,
         },
-      });
+        message: 'Account created. Verification link sent.',
+      };
+
+      if (!emailResult.sent) {
+        response.message = 'Account created. SMTP not configured, verification link logged to console.';
+        response.verifyToken = verificationToken;
+        response.verifyUrl = verifyUrl;
+      }
+
+      res.status(201).json(response);
     } catch (error) {
       console.error('Signup error:', error);
       res.status(500).json({ success: false, message: 'Server error during registration' });
@@ -107,6 +151,7 @@ router.post(
           id: user._id,
           name: user.name,
           email: user.email,
+          isVerified: user.isVerified || false,
         },
       });
     } catch (error) {
@@ -127,6 +172,7 @@ router.get('/me', protect, async (req, res) => {
         id: req.user._id,
         name: req.user.name,
         email: req.user.email,
+        isVerified: req.user.isVerified || false,
       },
     });
   } catch (error) {
@@ -261,6 +307,7 @@ router.post(
           id: user._id,
           name: user.name,
           email: user.email,
+          isVerified: user.isVerified || false,
         },
       });
     } catch (error) {
@@ -269,5 +316,96 @@ router.post(
     }
   }
 );
+
+// @route   GET /api/auth/verify/:token
+// @desc    Verify user email using token
+// @access  Public
+router.get('/verify/:token', async (req, res) => {
+  try {
+    const user = await User.findOne({ verificationToken: req.params.token });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired verification token' });
+    }
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verified successfully!',
+    });
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ success: false, message: 'Server error verifying email' });
+  }
+});
+
+// @route   POST /api/auth/resend-verification
+// @desc    Resend verification link email
+// @access  Private
+router.post('/resend-verification', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ success: false, message: 'Email is already verified' });
+    }
+
+    // Generate new token
+    const verificationToken = crypto.randomBytes(20).toString('hex');
+    user.verificationToken = verificationToken;
+    await user.save();
+
+    // Determine client URL dynamically
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5173';
+    const clientUrl = `${protocol}://${host}`;
+    const verifyUrl = `${clientUrl}?verifyToken=${verificationToken}`;
+
+    // Email message details
+    const subject = 'Verify Your Email - WordFlow Global';
+    const message = `Please verify your email address by clicking on the link below, or pasting it into your browser:\n\n${verifyUrl}\n`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h2 style="color: #6366f1; text-align: center;">Verify Your Email</h2>
+        <p>Hello ${user.name},</p>
+        <p>Please verify your email address by clicking the button below to secure your account:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${verifyUrl}" style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Verify Email</a>
+        </div>
+        <p style="color: #64748b; font-size: 0.85rem; word-break: break-all;">If the button doesn't work, copy and paste this link into your browser:<br>${verifyUrl}</p>
+      </div>
+    `;
+
+    // Send email
+    const emailResult = await sendEmail({
+      email: user.email,
+      subject,
+      message,
+      html,
+    });
+
+    const response = {
+      success: true,
+      message: 'Verification link resent successfully.',
+    };
+
+    if (!emailResult.sent) {
+      response.message = 'Verification email logged. SMTP not configured, link logged to console.';
+      response.verifyToken = verificationToken;
+      response.verifyUrl = verifyUrl;
+    }
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({ success: false, message: 'Server error resending verification link' });
+  }
+});
 
 module.exports = router;

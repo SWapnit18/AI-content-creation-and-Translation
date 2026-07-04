@@ -3,10 +3,13 @@ import {
   History, Sparkles, Clock, Coins, FileText, Trash2, Edit3, Search,
   Download, Check, X, ChevronDown, ChevronUp, TrendingUp, BarChart3, RefreshCw
 } from 'lucide-react';
-import { getHistory, deleteHistory, updateHistory, getAnalytics } from '../services/api';
+import { getHistory, deleteHistory, updateHistory, getAnalytics, resendVerification } from '../services/api';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  const [resending, setResending] = useState(false);
   const [history, setHistory] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -90,6 +93,22 @@ export default function Dashboard() {
     fetchDashboardData();
     fetchAnalyticsData();
     toast.success('Dashboard data refreshed');
+  };
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    try {
+      const res = await resendVerification();
+      toast.success(res.message || 'Verification link sent to your email!');
+      if (res.verifyUrl) {
+        console.log('Verification URL:', res.verifyUrl);
+        toast.success(`Verification link logged to console!`, { duration: 6000 });
+      }
+    } catch (err) {
+      toast.error(err.message || 'Failed to resend verification email.');
+    } finally {
+      setResending(false);
+    }
   };
 
   // Delete log item
@@ -375,6 +394,54 @@ export default function Dashboard() {
           Refresh
         </button>
       </div>
+
+      {/* Email Verification Warning Banner */}
+      {user && !user.isVerified && (
+        <div style={{
+          background: 'rgba(245, 158, 11, 0.1)',
+          border: '1px solid rgba(245, 158, 11, 0.3)',
+          borderRadius: '12px',
+          padding: '1.25rem 1.5rem',
+          marginBottom: '2rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '1.5rem',
+          flexWrap: 'wrap',
+        }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: '1.5rem', marginTop: '-2px' }}>✉️</span>
+            <div>
+              <h4 style={{ color: '#f59e0b', fontWeight: 700, margin: 0, fontSize: '0.95rem' }}>Please verify your email address</h4>
+              <p style={{ color: 'var(--text-body)', fontSize: '0.85rem', margin: '4px 0 0 0', lineHeight: 1.4 }}>
+                A verification link was sent to <strong>{user.email}</strong>. Please check your inbox (and spam folder) and verify your account to ensure full security.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleResendVerification}
+            disabled={resending}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '6px',
+              backgroundColor: '#f59e0b',
+              color: '#000',
+              fontWeight: 600,
+              fontSize: '0.8rem',
+              border: 'none',
+              cursor: resending ? 'not-allowed' : 'pointer',
+              opacity: resending ? 0.8 : 1,
+              transition: 'background-color 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            {resending && <span className="spinner" style={{ border: '2px solid #000', borderTop: '2px solid transparent', borderRadius: '50%', width: 12, height: 12, display: 'inline-block', animation: 'spin 1s linear infinite' }} />}
+            {resending ? 'Resending...' : 'Resend Verification Email'}
+          </button>
+        </div>
+      )}
 
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes spin {

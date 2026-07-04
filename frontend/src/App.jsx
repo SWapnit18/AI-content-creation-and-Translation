@@ -12,8 +12,8 @@ import Contact from './components/Contact';
 import AuthModal from './components/AuthModal';
 import Dashboard from './components/Dashboard';
 
-import { translateText, generateCreativeContent, improveWriting, resetPassword } from './services/api';
-import { Lock, RefreshCcw } from 'lucide-react';
+import { translateText, generateCreativeContent, improveWriting, resetPassword, verifyEmail } from './services/api';
+import { Lock, RefreshCcw, Eye, EyeOff } from 'lucide-react';
 
 import './styles/index.css';
 
@@ -52,18 +52,43 @@ function AppContent() {
   const [resetToken, setResetToken] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
   
-  const { isAuthenticated, loginWithToken } = useAuth();
+  const { isAuthenticated, loginWithToken, refreshUser } = useAuth();
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('resetToken');
-    if (token) {
-      setResetToken(token);
-      // Clean query parameter from URL bar without refreshing page
-      const newUrl = window.location.pathname + window.location.hash;
-      window.history.replaceState({}, document.title, newUrl);
-    }
+    const handleQueryParams = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const resetTokenParam = params.get('resetToken');
+      const verifyTokenParam = params.get('verifyToken');
+
+      let cleanUrlNeeded = false;
+
+      if (resetTokenParam) {
+        setResetToken(resetTokenParam);
+        cleanUrlNeeded = true;
+      }
+
+      if (verifyTokenParam) {
+        cleanUrlNeeded = true;
+        try {
+          const res = await verifyEmail(verifyTokenParam);
+          if (res.success) {
+            toast.success('Email verified successfully! Welcome to WordFlow Global.');
+            await refreshUser();
+          }
+        } catch (err) {
+          toast.error(err.message || 'Email verification failed. The link might be invalid or expired.');
+        }
+      }
+
+      if (cleanUrlNeeded) {
+        const newUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, document.title, newUrl);
+      }
+    };
+
+    handleQueryParams();
   }, []);
 
   const handleTranslate = async (text, language) => {
@@ -256,14 +281,33 @@ function AppContent() {
               <div className="auth-input-group">
                 <Lock size={18} className="auth-icon" />
                 <input
-                  type="password"
+                  type={showResetPassword ? 'text' : 'password'}
                   placeholder="New Password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   minLength={6}
                   className="auth-input"
+                  style={{ paddingRight: '42px' }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowResetPassword(!showResetPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: 12,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-body)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  {showResetPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
 
               <button
