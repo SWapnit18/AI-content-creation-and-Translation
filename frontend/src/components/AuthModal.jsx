@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Mail, Lock, User, RefreshCcw, Key } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { forgotPassword } from '../services/api';
@@ -10,14 +10,28 @@ export default function AuthModal({ isOpen, onClose }) {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [isShaking, setIsShaking] = useState(false);
   const { login, signup } = useAuth();
 
+  // Reset states when modal is opened, closed, or switched mode
+  useEffect(() => {
+    setError('');
+    setIsShaking(false);
+  }, [mode, isOpen]);
+
   if (!isOpen) return null;
+
+  const triggerShake = () => {
+    setIsShaking(true);
+    setTimeout(() => setIsShaking(false), 500);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || (mode !== 'forgot' && !password) || (mode === 'signup' && !name)) return;
     setLoading(true);
+    setError('');
 
     try {
       if (mode === 'login') {
@@ -48,7 +62,8 @@ export default function AuthModal({ isOpen, onClose }) {
         setMode('login');
       }
     } catch (err) {
-      toast.error(err.message || 'Authentication action failed.');
+      setError(err.message || 'Authentication action failed.');
+      triggerShake();
     } finally {
       setLoading(false);
     }
@@ -82,7 +97,9 @@ export default function AuthModal({ isOpen, onClose }) {
           boxShadow: 'var(--shadow)',
           padding: '2.25rem',
           position: 'relative',
-          animation: 'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+          animation: isShaking 
+            ? 'shake 0.4s ease-in-out' 
+            : 'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -91,6 +108,11 @@ export default function AuthModal({ isOpen, onClose }) {
           @keyframes slideIn {
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
+          }
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            15%, 45%, 75% { transform: translateX(-6px); }
+            30%, 60%, 90% { transform: translateX(6px); }
           }
           .auth-tab {
             flex: 1;
@@ -180,6 +202,27 @@ export default function AuthModal({ isOpen, onClose }) {
             >
               Create Account
             </div>
+          </div>
+        )}
+
+        {/* Error Alert Banner */}
+        {error && (
+          <div style={{
+            backgroundColor: 'rgba(239, 68, 68, 0.12)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '10px',
+            padding: '12px 14px',
+            color: '#f87171',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.1)',
+          }}>
+            <span style={{ fontSize: '1.1rem' }}>⚠️</span>
+            <span style={{ flex: 1 }}>{error}</span>
           </div>
         )}
 

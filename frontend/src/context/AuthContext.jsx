@@ -43,7 +43,7 @@ export function AuthProvider({ children }) {
       }
     } catch (error) {
       toast.error(error.message || 'Registration failed');
-      return false;
+      throw error;
     }
   };
 
@@ -58,7 +58,7 @@ export function AuthProvider({ children }) {
       }
     } catch (error) {
       toast.error(error.message || 'Login failed');
-      return false;
+      throw error;
     }
   };
 
