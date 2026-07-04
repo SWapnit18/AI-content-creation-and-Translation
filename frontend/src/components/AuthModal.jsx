@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, User, RefreshCcw } from 'lucide-react';
+import { X, Mail, Lock, User, RefreshCcw, Key } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { forgotPassword } from '../services/api';
+import toast from 'react-hot-toast';
 
 export default function AuthModal({ isOpen, onClose }) {
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState('login'); // 'login', 'signup', 'forgot'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -14,23 +16,41 @@ export default function AuthModal({ isOpen, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password || (!isLogin && !name)) return;
+    if (!email || (mode !== 'forgot' && !password) || (mode === 'signup' && !name)) return;
     setLoading(true);
 
-    let success = false;
-    if (isLogin) {
-      success = await login(email, password);
-    } else {
-      success = await signup(name, email, password);
-    }
-
-    setLoading(false);
-    if (success) {
-      // Clear inputs
-      setEmail('');
-      setPassword('');
-      setName('');
-      onClose();
+    try {
+      if (mode === 'login') {
+        const success = await login(email, password);
+        if (success) {
+          setEmail('');
+          setPassword('');
+          setName('');
+          onClose();
+        }
+      } else if (mode === 'signup') {
+        const success = await signup(name, email, password);
+        if (success) {
+          setEmail('');
+          setPassword('');
+          setName('');
+          onClose();
+        }
+      } else if (mode === 'forgot') {
+        const res = await forgotPassword(email);
+        toast.success(res.message || 'Password reset link sent to your email!');
+        
+        // If testing locally/dev and token is returned in response, display it clearly for the developer
+        if (res.resetUrl) {
+          console.log('Reset URL:', res.resetUrl);
+          toast.success(`Reset link logged to console! Click 'Proceed' or copy from console to reset.`, { duration: 6000 });
+        }
+        setMode('login');
+      }
+    } catch (err) {
+      toast.error(err.message || 'Authentication action failed.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,29 +159,33 @@ export default function AuthModal({ isOpen, onClose }) {
             <span>WordFlow <span style={{ color: 'var(--primary)' }}>Global</span></span>
           </div>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-body)' }}>
-            {isLogin ? 'Sign in to access your dashboard & history' : 'Create an account to start saving content'}
+            {mode === 'login' && 'Sign in to access your dashboard & history'}
+            {mode === 'signup' && 'Create an account to start saving content'}
+            {mode === 'forgot' && 'Reset your password to regain access'}
           </p>
         </div>
 
         {/* Switcher Tabs */}
-        <div style={{ display: 'flex', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)' }}>
-          <div
-            className={`auth-tab ${isLogin ? 'active' : ''}`}
-            onClick={() => setIsLogin(true)}
-          >
-            Sign In
+        {mode !== 'forgot' && (
+          <div style={{ display: 'flex', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)' }}>
+            <div
+              className={`auth-tab ${mode === 'login' ? 'active' : ''}`}
+              onClick={() => setMode('login')}
+            >
+              Sign In
+            </div>
+            <div
+              className={`auth-tab ${mode === 'signup' ? 'active' : ''}`}
+              onClick={() => setMode('signup')}
+            >
+              Create Account
+            </div>
           </div>
-          <div
-            className={`auth-tab ${!isLogin ? 'active' : ''}`}
-            onClick={() => setIsLogin(false)}
-          >
-            Create Account
-          </div>
-        </div>
+        )}
 
         {/* Auth Form */}
         <form onSubmit={handleSubmit}>
-          {!isLogin && (
+          {mode === 'signup' && (
             <div className="auth-input-group">
               <User size={18} className="auth-icon" />
               <input
@@ -187,18 +211,38 @@ export default function AuthModal({ isOpen, onClose }) {
             />
           </div>
 
-          <div className="auth-input-group">
-            <Lock size={18} className="auth-icon" />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="auth-input"
-            />
-          </div>
+          {mode !== 'forgot' && (
+            <>
+              <div className="auth-input-group">
+                <Lock size={18} className="auth-icon" />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="auth-input"
+                />
+              </div>
+
+              {mode === 'login' && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.25rem', marginTop: '-0.5rem' }}>
+                  <span
+                    style={{
+                      fontSize: '0.8rem',
+                      color: 'var(--primary)',
+                      cursor: 'pointer',
+                      fontWeight: 500,
+                    }}
+                    onClick={() => setMode('forgot')}
+                  >
+                    Forgot Password?
+                  </span>
+                </div>
+              )}
+            </>
+          )}
 
           <button
             type="submit"
@@ -222,32 +266,41 @@ export default function AuthModal({ isOpen, onClose }) {
             }}
           >
             {loading && <span className="spinner" style={{ border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', width: 14, height: 14, display: 'inline-block', animation: 'spin 1s linear infinite' }} />}
-            {loading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
+            {loading ? 'Processing...' : mode === 'login' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Send Reset Link'}
           </button>
         </form>
 
         {/* Small text to switch */}
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--text-body)' }}>
-          {isLogin ? (
+          {mode === 'login' && (
             <>
               Don't have an account?{' '}
               <span
                 style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}
-                onClick={() => setIsLogin(false)}
+                onClick={() => setMode('signup')}
               >
                 Sign Up
               </span>
             </>
-          ) : (
+          )}
+          {mode === 'signup' && (
             <>
               Already have an account?{' '}
               <span
                 style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}
-                onClick={() => setIsLogin(true)}
+                onClick={() => setMode('login')}
               >
                 Sign In
               </span>
             </>
+          )}
+          {mode === 'forgot' && (
+            <span
+              style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+              onClick={() => setMode('login')}
+            >
+              Back to Sign In
+            </span>
           )}
         </div>
       </div>

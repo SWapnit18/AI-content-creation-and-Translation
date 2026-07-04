@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -12,7 +12,8 @@ import Contact from './components/Contact';
 import AuthModal from './components/AuthModal';
 import Dashboard from './components/Dashboard';
 
-import { translateText, generateCreativeContent, improveWriting } from './services/api';
+import { translateText, generateCreativeContent, improveWriting, resetPassword } from './services/api';
+import { Lock, RefreshCcw } from 'lucide-react';
 
 import './styles/index.css';
 
@@ -48,7 +49,22 @@ function SectionHeader({ title, desc }) {
 function AppContent() {
   const [currentView, setCurrentView] = useState('home');
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const [resetToken, setResetToken] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  
+  const { isAuthenticated, loginWithToken } = useAuth();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('resetToken');
+    if (token) {
+      setResetToken(token);
+      // Clean query parameter from URL bar without refreshing page
+      const newUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, []);
 
   const handleTranslate = async (text, language) => {
     try {
@@ -83,6 +99,29 @@ function AppContent() {
       return res.result;
     } catch (err) {
       throw new Error(err.message || 'Improvement failed');
+    }
+  };
+
+  const handleResetSubmit = async (e) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters long.');
+      return;
+    }
+    setResetLoading(true);
+
+    try {
+      const res = await resetPassword(resetToken, newPassword);
+      if (res.success) {
+        toast.success('Password reset successfully!');
+        loginWithToken(res.token, res.user);
+        setResetToken(null);
+        setNewPassword('');
+      }
+    } catch (err) {
+      toast.error(err.message || 'Reset password failed. Link might be expired.');
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -169,6 +208,110 @@ function AppContent() {
 
       {/* Glass Auth Modal overlay */}
       <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+
+      {/* Glass Reset Password Modal overlay */}
+      {resetToken && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(5, 8, 16, 0.75)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 440,
+              background: 'var(--bg-alt)',
+              border: '1px solid var(--border)',
+              borderRadius: 16,
+              boxShadow: 'var(--shadow)',
+              padding: '2.25rem',
+              position: 'relative',
+              animation: 'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+          >
+            {/* Logo and title */}
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '0.5rem' }}>
+                <RefreshCcw size={22} style={{ color: 'var(--primary)' }} strokeWidth={2.5} />
+                <span>WordFlow <span style={{ color: 'var(--primary)' }}>Global</span></span>
+              </div>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-body)' }}>
+                Create a strong new password for your account
+              </p>
+            </div>
+
+            {/* Reset Password Form */}
+            <form onSubmit={handleResetSubmit}>
+              <div className="auth-input-group">
+                <Lock size={18} className="auth-icon" />
+                <input
+                  type="password"
+                  placeholder="New Password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="auth-input"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={resetLoading}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: 8,
+                  border: 'none',
+                  background: 'var(--primary)',
+                  color: '#fff',
+                  fontWeight: 600,
+                  cursor: resetLoading ? 'not-allowed' : 'pointer',
+                  opacity: resetLoading ? 0.8 : 1,
+                  marginTop: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)',
+                }}
+              >
+                {resetLoading && <span className="spinner" style={{ border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', width: 14, height: 14, display: 'inline-block', animation: 'spin 1s linear infinite' }} />}
+                {resetLoading ? 'Resetting...' : 'Reset Password'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setResetToken(null)}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  background: 'transparent',
+                  color: 'var(--text-body)',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  marginTop: '0.75rem',
+                }}
+              >
+                Cancel
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }

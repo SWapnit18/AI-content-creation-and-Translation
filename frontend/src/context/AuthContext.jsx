@@ -68,6 +68,12 @@ export function AuthProvider({ children }) {
     toast.success('Logged out successfully');
   };
 
+  const loginWithToken = (token, userData) => {
+    localStorage.setItem('token', token);
+    setUser(userData);
+    toast.success(`Welcome back, ${userData.name}!`);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -76,6 +82,7 @@ export function AuthProvider({ children }) {
         signup,
         login,
         logout,
+        loginWithToken,
         isAuthenticated: !!user,
       }}
     >

@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+const sendEmail = require('../utils/sendEmail');
 
 // Helper to generate JWT
 const generateToken = (id) => {
@@ -132,5 +134,140 @@ router.get('/me', protect, async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error fetching user profile' });
   }
 });
+
+// @route   POST /api/auth/forgotpassword
+// @desc    Generate password reset token and send email
+// @access  Public
+router.post(
+  '/forgotpassword',
+  [body('email').isEmail().withMessage('Please provide a valid email')],
+  handleValidation,
+  async (req, res) => {
+    const { email } = req.body;
+
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'No user registered with that email' });
+      }
+
+      // Generate random crypto token
+      const resetToken = crypto.randomBytes(20).toString('hex');
+
+      // Hash token and save to User model
+      user.resetPasswordToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+      // Set expiration: 10 minutes from now
+      user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+      await user.save();
+
+      // Determine client URL dynamically
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+      const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5173';
+      const clientUrl = `${protocol}://${host}`;
+      const resetUrl = `${clientUrl}?resetToken=${resetToken}`;
+
+      // Email message details
+      const subject = 'Password Reset Request - WordFlow Global';
+      const message = `You are receiving this email because you (or someone else) requested a password reset for your account.\n\nPlease click on the following link, or paste it into your browser, to reset your password:\n\n${resetUrl}\n\nThis link will expire in 10 minutes.\n\nIf you did not request this, please ignore this email and your password will remain unchanged.\n`;
+      const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h2 style="color: #6366f1; text-align: center;">WordFlow Global</h2>
+          <p>Hello,</p>
+          <p>You requested a password reset for your WordFlow Global account. Please click the button below to set a new password:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}" style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Reset Password</a>
+          </div>
+          <p style="color: #64748b; font-size: 0.85rem; word-break: break-all;">If the button doesn't work, copy and paste this link into your browser:<br>${resetUrl}</p>
+          <p style="color: #94a3b8; font-size: 0.8rem; border-top: 1px solid #f1f5f9; padding-top: 15px; margin-top: 25px;">This request expires in 10 minutes. If you did not make this request, you can safely ignore this email.</p>
+        </div>
+      `;
+
+      // Send email
+      const emailResult = await sendEmail({
+        email: user.email,
+        subject,
+        message,
+        html,
+      });
+
+      const response = {
+        success: true,
+        message: 'Password reset link sent successfully.',
+      };
+
+      // In development or when using mock fallback, return the token in the response for easy API testing
+      if (!emailResult.sent) {
+        response.message = 'SMTP not configured. Reset link logged to console.';
+        response.resetToken = resetToken;
+        response.resetUrl = resetUrl;
+      }
+
+      res.status(200).json(response);
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      res.status(500).json({ success: false, message: 'Server error requesting password reset' });
+    }
+  }
+);
+
+// @route   PUT /api/auth/resetpassword/:token
+// @desc    Reset user password using token
+// @access  Public
+router.post(
+  '/resetpassword/:token',
+  [
+    body('password')
+      .isLength({ min: 6 })
+      .withMessage('Password must be at least 6 characters long'),
+  ],
+  handleValidation,
+  async (req, res) => {
+    try {
+      // Hash incoming token
+      const hashedToken = crypto
+        .createHash('sha256')
+        .update(req.params.token)
+        .digest('hex');
+
+      // Find user with active token and check expiration
+      const user = await User.findOne({
+        resetPasswordToken: hashedToken,
+        resetPasswordExpire: { $gt: Date.now() },
+      });
+
+      if (!user) {
+        return res.status(400).json({ success: false, message: 'Invalid or expired reset token' });
+      }
+
+      // Update password
+      user.password = req.body.password;
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save();
+
+      // Auto login user after reset by returning new token
+      const jwtToken = generateToken(user._id);
+
+      res.status(200).json({
+        success: true,
+        message: 'Password reset successful. Logged in successfully.',
+        token: jwtToken,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+        },
+      });
+    } catch (error) {
+      console.error('Reset password error:', error);
+      res.status(500).json({ success: false, message: 'Server error resetting password' });
+    }
+  }
+);
 
 module.exports = router;

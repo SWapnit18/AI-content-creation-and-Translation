@@ -79,6 +79,16 @@ export const getMe = async () => {
   return response.data;
 };
 
+export const forgotPassword = async (email) => {
+  const response = await api.post('/auth/forgotpassword', { email });
+  return response.data;
+};
+
+export const resetPassword = async (token, password) => {
+  const response = await api.post(`/auth/resetpassword/${token}`, { password });
+  return response.data;
+};
+
 // ─── History & Content Management APIs ──────────────────────────────────
 export const getHistory = async ({ type, limit = 10, page = 1, search } = {}) => {
   const params = {};
