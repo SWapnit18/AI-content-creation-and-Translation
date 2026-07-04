@@ -8,7 +8,7 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Interceptor to inject JWT token into requests
+// Request interceptor to inject JWT token into requests
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -22,35 +22,33 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor to extract server-side error messages
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Extract the backend message if available, else fallback to Axios default message
+    const message = error.response?.data?.message || error.message || 'An unexpected error occurred';
+    const customError = new Error(message);
+    customError.status = error.response?.status;
+    customError.response = error.response;
+    return Promise.reject(customError);
+  }
+);
+
 // ─── AI Content Generation APIs ──────────────────────────────────────────
 export const translateText = async (text, targetLanguage) => {
-  try {
-    const response = await api.post('/ai/translate', { text, targetLanguage });
-    return response.data;
-  } catch (error) {
-    console.error('Translation error:', error);
-    throw error.response?.data || { message: 'Translation generation failed.' };
-  }
+  const response = await api.post('/ai/translate', { text, targetLanguage });
+  return response.data;
 };
 
 export const generateCreativeContent = async (text, language) => {
-  try {
-    const response = await api.post('/ai/creative', { text, language });
-    return response.data;
-  } catch (error) {
-    console.error('Creative content error:', error);
-    throw error.response?.data || { message: 'Creative generation failed.' };
-  }
+  const response = await api.post('/ai/creative', { text, language });
+  return response.data;
 };
 
 export const improveWriting = async (text) => {
-  try {
-    const response = await api.post('/ai/improve', { text });
-    return response.data;
-  } catch (error) {
-    console.error('Improve writing error:', error);
-    throw error.response?.data || { message: 'Improve writing failed.' };
-  }
+  const response = await api.post('/ai/improve', { text });
+  return response.data;
 };
 
 export const submitContact = async (data) => {
