@@ -17,6 +17,22 @@ const app = express();
 // Trust proxy for Vercel rate limiting (prevents shared global 429)
 app.set('trust proxy', 1);
 
+// Middleware to restore original request URL path if rewritten by Vercel
+app.use((req, res, next) => {
+  if (req.query && req.query.path) {
+    const originalPath = '/api/' + req.query.path;
+    try {
+      const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      urlObj.pathname = originalPath;
+      urlObj.searchParams.delete('path');
+      req.url = urlObj.pathname + urlObj.search;
+    } catch (e) {
+      req.url = originalPath;
+    }
+  }
+  next();
+});
+
 // ─── Connect to MongoDB ────────────────────────────────────────────────────
 connectDB();
 
