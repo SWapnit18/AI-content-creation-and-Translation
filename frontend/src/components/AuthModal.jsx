@@ -205,26 +205,6 @@ export default function AuthModal({ isOpen, onClose }) {
           </div>
         )}
 
-        {/* Error Alert Banner */}
-        {error && (
-          <div style={{
-            backgroundColor: 'rgba(239, 68, 68, 0.12)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            borderRadius: '10px',
-            padding: '12px 14px',
-            color: '#f87171',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.1)',
-          }}>
-            <span style={{ fontSize: '1.1rem' }}>⚠️</span>
-            <span style={{ flex: 1 }}>{error}</span>
-          </div>
-        )}
 
         {/* Auth Form */}
         <form onSubmit={handleSubmit}>
@@ -285,6 +265,19 @@ export default function AuthModal({ isOpen, onClose }) {
                 </div>
               )}
             </>
+          )}
+
+          {error && (
+            <div style={{
+              color: '#ef4444',
+              fontSize: '0.85rem',
+              fontWeight: 500,
+              textAlign: 'center',
+              marginBottom: '1rem',
+              marginTop: '0.5rem'
+            }}>
+              {error}
+            </div>
           )}
 
           <button
