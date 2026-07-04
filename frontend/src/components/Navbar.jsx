@@ -31,147 +31,151 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth }) {
   };
 
   return (
-    <nav className="glass-nav nav-container" style={{ position: 'relative' }}>
-      {/* Brand logo */}
-      <div 
-        onClick={() => { setCurrentView('home'); setIsMenuOpen(false); }}
-        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-heading)', cursor: 'pointer' }}
-      >
-        <RefreshCcw size={26} style={{ color: 'var(--primary)' }} strokeWidth={2.5} />
-        <span style={{ color: 'var(--text-heading)' }}>WordFlow <span style={{ color: 'var(--primary)' }}>Global</span></span>
-      </div>
-      
-      {/* Desktop Navigation links */}
-      <div className="nav-links" style={{ display: 'flex', gap: '2.5rem', alignItems: 'center', fontWeight: '500', color: 'var(--text-heading)' }}>
-        {currentView === 'home' ? (
-          <>
-            <a href="#translation" onClick={(e) => { e.preventDefault(); handleNavClick('translation'); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem' }}>Translate</a>
-            <a href="#creative" onClick={(e) => { e.preventDefault(); handleNavClick('creative'); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem' }}>Creative</a>
-            <a href="#improve" onClick={(e) => { e.preventDefault(); handleNavClick('improve'); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem' }}>Refine</a>
-            <a href="#quote" onClick={(e) => { e.preventDefault(); handleNavClick('quote'); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem' }}>Analyze</a>
-          </>
-        ) : (
+    <nav className="glass-nav" style={{ position: 'relative', width: '100%' }}>
+      {/* Navbar Inner Flex Container */}
+      <div className="nav-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        
+        {/* Brand logo */}
+        <div 
+          onClick={() => { setCurrentView('home'); setIsMenuOpen(false); }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-heading)', cursor: 'pointer' }}
+        >
+          <RefreshCcw size={26} style={{ color: 'var(--primary)' }} strokeWidth={2.5} />
+          <span style={{ color: 'var(--text-heading)' }}>WordFlow <span style={{ color: 'var(--primary)' }}>Global</span></span>
+        </div>
+        
+        {/* Desktop Navigation links */}
+        <div className="nav-links" style={{ display: 'flex', gap: '2.5rem', alignItems: 'center', fontWeight: '500', color: 'var(--text-heading)' }}>
+          {currentView === 'home' ? (
+            <>
+              <a href="#translation" onClick={(e) => { e.preventDefault(); handleNavClick('translation'); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem' }}>Translate</a>
+              <a href="#creative" onClick={(e) => { e.preventDefault(); handleNavClick('creative'); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem' }}>Creative</a>
+              <a href="#improve" onClick={(e) => { e.preventDefault(); handleNavClick('improve'); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem' }}>Refine</a>
+              <a href="#quote" onClick={(e) => { e.preventDefault(); handleNavClick('quote'); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem' }}>Analyze</a>
+            </>
+          ) : (
+            <button 
+              onClick={() => setCurrentView('home')} 
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                color: 'var(--text-heading)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.4rem', 
+                fontSize: '1.05rem', 
+                fontWeight: 500,
+                cursor: 'pointer'
+              }}
+              className="nav-link"
+            >
+              <Home size={18} style={{ color: 'var(--primary)' }} />
+              Home / Tools
+            </button>
+          )}
+
+          {/* Dashboard Link (Only visible if authenticated) */}
+          {isAuthenticated && (
+            <button 
+              onClick={() => setCurrentView(currentView === 'dashboard' ? 'home' : 'dashboard')} 
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                color: currentView === 'dashboard' ? 'var(--primary)' : 'var(--text-heading)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.4rem', 
+                fontSize: '1.05rem', 
+                fontWeight: 500,
+                cursor: 'pointer'
+              }}
+              className="nav-link"
+            >
+              <LayoutDashboard size={18} />
+              Dashboard
+            </button>
+          )}
+        </div>
+
+        {/* Desktop Auth and Theme panel */}
+        <div className="nav-right-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <button 
-            onClick={() => setCurrentView('home')} 
+            onClick={toggleTheme} 
             style={{ 
-              background: 'none', 
-              border: 'none', 
+              background: 'var(--bg-alt)', 
+              border: '1px solid var(--border)', 
               color: 'var(--text-heading)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.4rem', 
-              fontSize: '1.05rem', 
-              fontWeight: 500,
+              padding: '10px 12px', 
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               cursor: 'pointer'
             }}
-            className="nav-link"
           >
-            <Home size={18} style={{ color: 'var(--primary)' }} />
-            Home / Tools
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
-        )}
 
-        {/* Dashboard Link (Only visible if authenticated) */}
-        {isAuthenticated && (
-          <button 
-            onClick={() => setCurrentView(currentView === 'dashboard' ? 'home' : 'dashboard')} 
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              color: currentView === 'dashboard' ? 'var(--primary)' : 'var(--text-heading)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.4rem', 
-              fontSize: '1.05rem', 
-              fontWeight: 500,
-              cursor: 'pointer'
-            }}
-            className="nav-link"
-          >
-            <LayoutDashboard size={18} />
-            Dashboard
-          </button>
-        )}
-      </div>
+          {isAuthenticated ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '4px 8px 4px 12px', background: 'var(--bg-alt)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <User size={16} style={{ color: 'var(--primary)' }} />
+                <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-heading)' }}>{user.name}</span>
+              </div>
+              <button
+                onClick={logout}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-body)',
+                  padding: '6px',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-body)'}
+                title="Logout"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onOpenAuth}
+              className="btn-primary"
+              style={{
+                padding: '10px 20px',
+                borderRadius: '10px',
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Sign In
+            </button>
+          )}
+        </div>
 
-      {/* Desktop Auth and Theme panel */}
-      <div className="nav-right-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        {/* Hamburger / Mobile menu toggle button */}
         <button 
-          onClick={toggleTheme} 
-          style={{ 
-            background: 'var(--bg-alt)', 
-            border: '1px solid var(--border)', 
-            color: 'var(--text-heading)', 
-            padding: '10px 12px', 
-            borderRadius: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer'
+          className="mobile-menu-toggle"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          style={{
+            display: 'none', // Overridden by CSS media query in index.css
+            background: 'none',
+            border: 'none',
+            color: 'var(--text-heading)',
+            cursor: 'pointer',
+            padding: '8px',
+            borderRadius: '8px',
           }}
         >
-          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
-
-        {isAuthenticated ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '4px 8px 4px 12px', background: 'var(--bg-alt)', border: '1px solid var(--border)', borderRadius: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <User size={16} style={{ color: 'var(--primary)' }} />
-              <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-heading)' }}>{user.name}</span>
-            </div>
-            <button
-              onClick={logout}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-body)',
-                padding: '6px',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-body)'}
-              title="Logout"
-            >
-              <LogOut size={16} />
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={onOpenAuth}
-            className="btn-primary"
-            style={{
-              padding: '10px 20px',
-              borderRadius: '10px',
-              fontSize: '0.95rem',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            Sign In
-          </button>
-        )}
       </div>
-
-      {/* Hamburger / Mobile menu toggle button */}
-      <button 
-        className="mobile-menu-toggle"
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        style={{
-          display: 'none', // Overridden by CSS media query in index.css
-          background: 'none',
-          border: 'none',
-          color: 'var(--text-heading)',
-          cursor: 'pointer',
-          padding: '8px',
-          borderRadius: '8px',
-        }}
-      >
-        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
 
       {/* Mobile drop-down overlay menu container */}
       {isMenuOpen && (
@@ -187,10 +191,10 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth }) {
         >
           {currentView === 'home' ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <a href="#translation" onClick={(e) => { e.preventDefault(); handleNavClick('translation'); setIsMenuOpen(false); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem', padding: '8px 0', display: 'block' }}>Translate</a>
-              <a href="#creative" onClick={(e) => { e.preventDefault(); handleNavClick('creative'); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem', padding: '8px 0', display: 'block' }}>Creative</a>
-              <a href="#improve" onClick={(e) => { e.preventDefault(); handleNavClick('improve'); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem', padding: '8px 0', display: 'block' }}>Refine</a>
-              <a href="#quote" onClick={(e) => { e.preventDefault(); handleNavClick('quote'); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem', padding: '8px 0', display: 'block' }}>Analyze</a>
+              <a href="#translation" onClick={(e) => { e.preventDefault(); handleNavClick('translation'); setIsMenuOpen(false); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem', padding: '8px 16px', display: 'block' }}>Translate</a>
+              <a href="#creative" onClick={(e) => { e.preventDefault(); handleNavClick('creative'); setIsMenuOpen(false); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem', padding: '8px 16px', display: 'block' }}>Creative</a>
+              <a href="#improve" onClick={(e) => { e.preventDefault(); handleNavClick('improve'); setIsMenuOpen(false); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem', padding: '8px 16px', display: 'block' }}>Refine</a>
+              <a href="#quote" onClick={(e) => { e.preventDefault(); handleNavClick('quote'); setIsMenuOpen(false); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem', padding: '8px 16px', display: 'block' }}>Analyze</a>
             </div>
           ) : (
             <button 
@@ -205,7 +209,7 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth }) {
                 fontSize: '1.05rem', 
                 fontWeight: 500,
                 cursor: 'pointer',
-                padding: '8px 0',
+                padding: '8px 16px',
                 width: '100%',
                 textAlign: 'left'
               }}
@@ -229,7 +233,7 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth }) {
                 fontSize: '1.05rem', 
                 fontWeight: 500,
                 cursor: 'pointer',
-                padding: '8px 0',
+                padding: '8px 16px',
                 width: '100%',
                 textAlign: 'left'
               }}
@@ -240,9 +244,9 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth }) {
             </button>
           )}
 
-          <div style={{ height: '1px', backgroundColor: 'var(--border)', margin: '8px 0' }} />
+          <div style={{ height: '1px', backgroundColor: 'var(--border)', margin: '8px 16px' }} />
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 16px' }}>
             <span style={{ fontSize: '1.05rem', color: 'var(--text-body)' }}>Theme Mode</span>
             <button 
               onClick={toggleTheme} 
@@ -262,7 +266,7 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth }) {
             </button>
           </div>
 
-          <div style={{ marginTop: '0.75rem' }}>
+          <div style={{ marginTop: '0.75rem', padding: '0 16px 8px 16px' }}>
             {isAuthenticated ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
