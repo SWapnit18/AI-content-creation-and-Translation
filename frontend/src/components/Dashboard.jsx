@@ -636,16 +636,17 @@ export default function Dashboard() {
         
         {/* Search Field */}
         <div style={{ position: 'relative', width: '100%', maxWidth: 300 }}>
-          <Search size={18} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-body)' }} />
+          <Search size={18} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-body)' }} />
           <input
             type="text"
             placeholder="Search prompt or result..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
-              padding: '10px 16px 10px 40px',
+              padding: '14px 16px 14px 44px',
               margin: 0,
-              fontSize: '0.9rem',
+              fontSize: '1rem',
+              borderRadius: '12px',
               backgroundColor: 'var(--bg-alt)'
             }}
           />

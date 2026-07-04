@@ -82,9 +82,10 @@ button {
   background: var(--primary);
   color: white;
   border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-weight: 500;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
 }
 
 .btn-primary:hover {
@@ -113,10 +114,11 @@ input, textarea, select {
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid var(--border);
   color: var(--text-heading);
-  border-radius: 8px;
-  padding: 12px 16px;
+  border-radius: 12px;
+  padding: 14px 18px;
   font-family: inherit;
-  margin-bottom: 1rem;
+  font-size: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 :root[data-theme="light"] input,
@@ -259,11 +261,6 @@ input:focus, textarea:focus, select:focus {
 }
 
 @media (max-width: 480px) {
-  .nav-container {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
-
   .nav-links {
     flex-wrap: wrap !important;
   }

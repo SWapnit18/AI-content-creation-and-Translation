@@ -55,7 +55,7 @@ export default function AIFormCard({ id, title, description, onSubmit, extraFiel
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-heading)', marginBottom: '0.5rem' }}>{title}</h2>
       <p style={{ color: 'var(--text-body)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>{description}</p>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         <textarea
           value={text}
           onChange={e => setText(e.target.value)}
@@ -64,9 +64,9 @@ export default function AIFormCard({ id, title, description, onSubmit, extraFiel
           maxLength={3000}
           required
           style={{
-            width: '100%', padding: '0.85rem', borderRadius: 8,
+            width: '100%', padding: '14px 18px', borderRadius: 12,
             border: `1px solid var(--border)`, backgroundColor: 'var(--bg-alt)',
-            color: 'var(--text-heading)', fontSize: '0.95rem', resize: 'vertical',
+            color: 'var(--text-heading)', fontSize: '1rem', resize: 'vertical',
             outline: 'none', fontFamily: 'inherit',
           }}
         />
@@ -74,23 +74,23 @@ export default function AIFormCard({ id, title, description, onSubmit, extraFiel
         {extraField && (
           <select value={extra} onChange={e => setExtra(e.target.value)}
             style={{
-              width: '100%', padding: '0.85rem', borderRadius: 8,
+              width: '100%', padding: '14px 18px', borderRadius: 12,
               border: `1px solid var(--border)`, backgroundColor: 'var(--bg-alt)',
-              color: 'var(--text-heading)', fontSize: '0.95rem', outline: 'none',
+              color: 'var(--text-heading)', fontSize: '1rem', outline: 'none',
             }}>
             {extraField.options.map(opt => <option key={opt}>{opt}</option>)}
           </select>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-body)' }}>{text.length}/3000</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifycontent: 'space-between', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-body)' }}>{text.length}/3000</span>
           <button type="submit" disabled={loading || !text.trim()}
             style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
               backgroundColor: 'var(--accent)', color: '#fff',
-              border: 'none', borderRadius: 9999, padding: '0.75rem 2rem',
+              border: 'none', borderRadius: 12, padding: '12px 28px',
               fontWeight: 600, cursor: loading || !text.trim() ? 'not-allowed' : 'pointer',
-              opacity: loading || !text.trim() ? 0.7 : 1, fontSize: '0.95rem',
+              opacity: loading || !text.trim() ? 0.7 : 1, fontSize: '1rem',
               transition: 'opacity 0.2s',
             }}>
             {loading && <span className="spinner" />}

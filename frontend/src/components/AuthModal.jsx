@@ -141,9 +141,10 @@ export default function AuthModal({ isOpen, onClose }) {
             }
             .auth-tab {
               flex: 1;
-              padding: 0.75rem;
+              padding: 0.9rem;
               text-align: center;
               font-weight: 600;
+              font-size: 1.05rem;
               border-bottom: 2px solid transparent;
               cursor: pointer;
               color: var(--text-body);
@@ -158,11 +159,11 @@ export default function AuthModal({ isOpen, onClose }) {
             }
             .auth-input-group {
               position: relative;
-              margin-bottom: 1.25rem;
+              margin-bottom: 1.35rem;
             }
             .auth-icon {
               position: absolute;
-              left: 12px;
+              left: 14px;
               top: 50%;
               transform: translateY(-50%);
               color: var(--text-body);
@@ -170,8 +171,10 @@ export default function AuthModal({ isOpen, onClose }) {
             }
             .auth-input {
               width: 100%;
-              padding: 12px 16px 12px 42px !important;
+              padding: 14px 16px 14px 44px !important;
               margin-bottom: 0 !important;
+              font-size: 1rem !important;
+              border-radius: 12px !important;
             }
           `}} />
 
@@ -201,11 +204,11 @@ export default function AuthModal({ isOpen, onClose }) {
 
           {/* Logo and title */}
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '0.5rem' }}>
-              <RefreshCcw size={22} style={{ color: 'var(--primary)' }} strokeWidth={2.5} />
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '0.6rem' }}>
+              <RefreshCcw size={26} style={{ color: 'var(--primary)' }} strokeWidth={2.5} />
               <span>WordFlow <span style={{ color: 'var(--primary)' }}>Global</span></span>
             </div>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-body)' }}>
+            <p style={{ fontSize: '1rem', color: 'var(--text-body)', lineHeight: 1.5 }}>
               {mode === 'login' && 'Sign in to access your dashboard & history'}
               {mode === 'signup' && 'Create an account to start saving content'}
               {mode === 'forgot' && 'Reset your password to regain access'}
@@ -295,33 +298,33 @@ export default function AuthModal({ isOpen, onClose }) {
                 {/* Password Strength Checker for Signup */}
                 {mode === 'signup' && password && (
                   <div style={{ marginBottom: '1.25rem', marginTop: '-0.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-body)' }}>Password Strength:</span>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: strength.color }}>{strength.label}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-body)' }}>Password Strength:</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: strength.color }}>{strength.label}</span>
                     </div>
-                    <div style={{ width: '100%', height: 4, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: 5, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 2.5, overflow: 'hidden' }}>
                       <div style={{ width: strength.percent, height: '100%', backgroundColor: strength.color, transition: 'all 0.3s' }} />
                     </div>
                   </div>
                 )}
 
                 {mode === 'login' && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', marginTop: '-0.5rem' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-body)', userSelect: 'none' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', marginTop: '-0.25rem' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem', color: 'var(--text-body)', userSelect: 'none' }}>
                       <input
                         type="checkbox"
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        style={{ cursor: 'pointer' }}
+                        style={{ cursor: 'pointer', width: '16px', height: '16px', margin: 0 }}
                       />
                       Remember Me
                     </label>
                     <span
                       style={{
-                        fontSize: '0.8rem',
+                        fontSize: '0.95rem',
                         color: 'var(--primary)',
                         cursor: 'pointer',
-                        fontWeight: 500,
+                        fontWeight: 600,
                       }}
                       onClick={() => setMode('forgot')}
                     >
@@ -335,10 +338,10 @@ export default function AuthModal({ isOpen, onClose }) {
             {error && (
               <div style={{
                 color: '#ef4444',
-                fontSize: '0.85rem',
-                fontWeight: 500,
+                fontSize: '0.95rem',
+                fontWeight: 600,
                 textAlign: 'center',
-                marginBottom: '1rem',
+                marginBottom: '1.25rem',
                 marginTop: '0.5rem'
               }}>
                 {error}
@@ -350,12 +353,13 @@ export default function AuthModal({ isOpen, onClose }) {
               disabled={loading}
               style={{
                 width: '100%',
-                padding: '12px',
-                borderRadius: 8,
+                padding: '14px',
+                borderRadius: 12,
                 border: 'none',
                 background: 'var(--primary)',
                 color: '#fff',
                 fontWeight: 600,
+                fontSize: '1.05rem',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.8 : 1,
                 marginTop: '0.5rem',
@@ -385,12 +389,13 @@ export default function AuthModal({ isOpen, onClose }) {
                 onClick={() => setShowGoogleHelp(true)}
                 style={{
                   width: '100%',
-                  padding: '12px',
-                  borderRadius: 8,
+                  padding: '14px',
+                  borderRadius: 12,
                   border: '1px solid var(--border)',
                   background: 'rgba(255, 255, 255, 0.02)',
                   color: 'var(--text-heading)',
                   fontWeight: 600,
+                  fontSize: '1rem',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -413,7 +418,7 @@ export default function AuthModal({ isOpen, onClose }) {
           )}
 
           {/* Small text to switch */}
-          <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--text-body)' }}>
+          <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.95rem', color: 'var(--text-body)' }}>
             {mode === 'login' && (
               <>
                 Don't have an account?{' '}
