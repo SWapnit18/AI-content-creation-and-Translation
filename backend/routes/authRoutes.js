@@ -132,13 +132,13 @@ router.post(
       // Check for user (must explicitly select password since select: false in schema)
       const user = await User.findOne({ email }).select('+password');
       if (!user) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        return res.status(404).json({ success: false, message: 'Email not found' });
       }
 
       // Compare passwords
       const isMatch = await user.comparePassword(password);
       if (!isMatch) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        return res.status(401).json({ success: false, message: 'Incorrect password' });
       }
 
       // Generate token

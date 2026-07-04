@@ -26,10 +26,25 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Extract the backend message if available, else fallback to Axios default message
-    const message = error.response?.data?.message || error.message || 'An unexpected error occurred';
+    // 1. Check for complete Network failures
+    if (!error.response) {
+      const netError = new Error('Network error. Please check your internet connection.');
+      netError.status = 0;
+      return Promise.reject(netError);
+    }
+    
+    // 2. Check for Server Error (500)
+    if (error.response.status === 500) {
+      const serverError = new Error('Server error (500). Please try again later.');
+      serverError.status = 500;
+      serverError.response = error.response;
+      return Promise.reject(serverError);
+    }
+
+    // 3. Extract the custom backend message if available
+    const message = error.response.data?.message || error.message || 'An unexpected error occurred';
     const customError = new Error(message);
-    customError.status = error.response?.status;
+    customError.status = error.response.status;
     customError.response = error.response;
     return Promise.reject(customError);
   }
