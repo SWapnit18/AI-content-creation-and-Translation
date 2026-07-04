@@ -2,6 +2,15 @@ const mongoose = require('mongoose');
 
 const contentGenerationSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      index: true,
+    },
+    title: {
+      type: String,
+      trim: true,
+    },
     type: {
       type: String,
       enum: ['translation', 'creative', 'improve', 'quote'],

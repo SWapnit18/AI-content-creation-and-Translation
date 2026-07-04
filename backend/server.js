@@ -9,6 +9,7 @@ const morgan = require('morgan');
 const connectDB = require('./config/db');
 const aiRoutes = require('./routes/aiRoutes');
 const contactRoutes = require('./routes/contactRoutes');
+const authRoutes = require('./routes/authRoutes');
 const { apiLimiter, aiLimiter, contactLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
@@ -57,6 +58,7 @@ app.use('/api/contact', contactLimiter);
 // ─── Routes ────────────────────────────────────────────────────────────────
 app.use('/api/ai', aiRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/auth', authRoutes);
 
 // ─── Health Check ──────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
