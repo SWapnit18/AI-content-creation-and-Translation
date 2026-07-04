@@ -6,7 +6,7 @@ export default function Hero() {
     <section style={{ padding: '7rem 3rem', position: 'relative', overflow: 'hidden' }}>
       <div className="hero-bg" style={{ position: 'absolute', top: 0, right: 0, width: '60%', height: '100%', background: 'radial-gradient(circle at right, rgba(99,102,241,0.15) 0%, rgba(0,0,0,0) 60%)', zIndex: -1 }}></div>
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '5rem' }}>
+      <div className="hero-container">
         <div style={{ flex: 1, textAlign: 'left' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)', padding: '8px 16px', borderRadius: '999px', fontSize: '0.85rem', fontWeight: 700, marginBottom: '2rem', border: '1px solid rgba(99, 102, 241, 0.2)', letterSpacing: '0.5px' }}>
             <Sparkles size={16} /> POWERED BY NEXT-GEN AI

@@ -19,7 +19,7 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth }) {
   };
 
   return (
-    <nav className="glass-nav" style={{ padding: '1.25rem 3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+    <nav className="glass-nav nav-container">
       {/* Brand logo */}
       <div 
         onClick={() => setCurrentView('home')}

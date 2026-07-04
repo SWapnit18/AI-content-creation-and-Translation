@@ -144,3 +144,86 @@ input:focus, textarea:focus, select:focus {
   color: var(--primary) !important;
   border-color: var(--primary) !important;
 }
+
+/* ── Responsive Rules & Media Queries ────────────────────────────────────── */
+.nav-container {
+  padding: 1.25rem 3rem;
+  transition: padding 0.3s;
+}
+
+@media (max-width: 968px) {
+  .hero-container {
+    flex-direction: column-reverse !important;
+    gap: 3rem !important;
+    text-align: center !important;
+  }
+  .hero-container > div {
+    text-align: center !important;
+  }
+  .hero-container p {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .hero-container div[style*="display: flex"] {
+    justify-content: center !important;
+  }
+  
+  /* Make lists flow naturally on mobile hero */
+  .hero-container div[style*="flex-wrap: wrap"] {
+    justify-content: center !important;
+    gap: 1.25rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-container {
+    padding: 1rem 1.5rem !important;
+    justify-content: center !important;
+    gap: 1rem !important;
+  }
+  
+  .nav-links {
+    gap: 1.25rem !important;
+    justify-content: center !important;
+    width: 100%;
+  }
+
+  .nav-links a, .nav-links button {
+    font-size: 0.95rem !important;
+  }
+
+  section {
+    padding: 3.5rem 1rem !important;
+  }
+
+  .hero-container h1 {
+    font-size: 2.25rem !important;
+  }
+
+  /* Form and cards spacing on smaller viewports */
+  .card {
+    padding: 1.25rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-container {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+
+  .nav-links {
+    flex-wrap: wrap !important;
+  }
+
+  .hero-container div[style*="display: flex"] {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    width: 100%;
+  }
+
+  .hero-container button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
