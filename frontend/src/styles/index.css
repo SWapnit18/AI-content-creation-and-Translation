@@ -147,6 +147,9 @@ input:focus, textarea:focus, select:focus {
 
 /* ── Responsive Rules & Media Queries ────────────────────────────────────── */
 .nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 1.25rem 3rem;
   transition: padding 0.3s;
 }
@@ -222,8 +225,13 @@ input:focus, textarea:focus, select:focus {
   }
 
   .nav-container {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
     padding: 1rem 1.5rem !important;
     gap: 1rem !important;
+    flex-wrap: nowrap !important;
   }
   
   .nav-links {
