@@ -113,14 +113,13 @@ export default function AuthModal({ isOpen, onClose }) {
         onClick={onClose}
       >
         <div
+          className="auth-modal-card"
           style={{
             width: '100%',
-            maxWidth: 440,
             background: 'var(--bg-alt)',
             border: '1px solid var(--border)',
             borderRadius: 16,
             boxShadow: 'var(--shadow)',
-            padding: '2.25rem',
             position: 'relative',
             animation: isShaking 
               ? 'shake 0.4s ease-in-out' 
@@ -128,7 +127,7 @@ export default function AuthModal({ isOpen, onClose }) {
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Style tag for CSS animations */}
+          {/* Style tag for CSS animations & responsive layout */}
           <style dangerouslySetInnerHTML={{__html: `
             @keyframes slideIn {
               from { transform: translateY(20px); opacity: 0; }
@@ -176,279 +175,411 @@ export default function AuthModal({ isOpen, onClose }) {
               font-size: 1rem !important;
               border-radius: 12px !important;
             }
+            @media (min-width: 1024px) {
+              .auth-modal-card {
+                max-width: 860px !important;
+                padding: 0 !important;
+                display: flex !important;
+                overflow: hidden;
+              }
+              .auth-left-branding {
+                display: flex !important;
+                flex-direction: column;
+                justify-content: center;
+                width: 45%;
+                background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+                padding: 3.5rem 2.5rem;
+                color: #ffffff;
+                position: relative;
+                overflow: hidden;
+              }
+              .auth-right-form {
+                width: 55%;
+                padding: 3.5rem 3rem;
+              }
+            }
+            @media (max-width: 1023px) {
+              .auth-modal-card {
+                max-width: 440px !important;
+                padding: 2.25rem !important;
+              }
+              .auth-left-branding {
+                display: none !important;
+              }
+              .auth-right-form {
+                width: 100%;
+                padding: 0;
+              }
+            }
+            @media (max-width: 480px) {
+              .auth-modal-card {
+                padding: 1.5rem !important;
+              }
+            }
           `}} />
 
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            style={{
+          {/* Left Side: Branding / Illustration (Visible on Desktop >= 1024px) */}
+          <div className="auth-left-branding">
+            {/* Dynamic backdrop glow */}
+            <div style={{
               position: 'absolute',
-              top: 16,
-              right: 16,
-              background: 'none',
-              border: 'none',
-              color: 'var(--text-body)',
-              cursor: 'pointer',
-              padding: 4,
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'background-color 0.2s',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-          >
-            <X size={20} />
-          </button>
+              top: '-20%',
+              left: '-20%',
+              width: '140%',
+              height: '140%',
+              background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 60%, transparent 100%)',
+              zIndex: 1,
+              pointerEvents: 'none'
+            }} />
+            
+            <div style={{ position: 'relative', zIndex: 2 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', fontSize: '1.6rem', fontWeight: 800, color: '#ffffff', marginBottom: '1.5rem' }}>
+                <RefreshCcw size={28} style={{ color: '#ffffff' }} strokeWidth={2.5} />
+                <span>WordFlow</span>
+              </div>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, lineHeight: 1.3, color: '#ffffff', marginBottom: '1rem' }}>
+                Empower Your Writing with AI
+              </h2>
+              <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '2rem' }}>
+                Translate languages, create engaging creative copies, and polish your text drafts with our state-of-the-art AI-powered platform.
+              </p>
 
-          {/* Logo and title */}
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '0.6rem' }}>
-              <RefreshCcw size={26} style={{ color: 'var(--primary)' }} strokeWidth={2.5} />
-              <span>WordFlow <span style={{ color: 'var(--primary)' }}>Global</span></span>
+              {/* Bullet highlights */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.15)', fontSize: '0.75rem' }}>✓</span>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: '#ffffff' }}>Contextual Translations</h4>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>Over 50 languages with deep semantic understanding.</p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.15)', fontSize: '0.75rem' }}>✓</span>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: '#ffffff' }}>Creative Engine</h4>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>Draft high-quality stories, blogs, and marketing copy.</p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.15)', fontSize: '0.75rem' }}>✓</span>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: '#ffffff' }}>Production Security</h4>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>Full rate limiting, encryption, and secure tokens.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Glass footer label */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.08)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: 12,
+                padding: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
+                <div style={{ fontSize: '1.25rem' }}>🌍</div>
+                <div style={{ fontSize: '0.8rem', color: '#ffffff', lineHeight: 1.4 }}>
+                  <strong>Global Access:</strong> Save and view history anytime from your secured dashboard.
+                </div>
+              </div>
             </div>
-            <p style={{ fontSize: '1rem', color: 'var(--text-body)', lineHeight: 1.5 }}>
-              {mode === 'login' && 'Sign in to access your dashboard & history'}
-              {mode === 'signup' && 'Create an account to start saving content'}
-              {mode === 'forgot' && 'Reset your password to regain access'}
-            </p>
           </div>
 
-          {/* Switcher Tabs */}
-          {mode !== 'forgot' && (
-            <div style={{ display: 'flex', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)' }}>
-              <div
-                className={`auth-tab ${mode === 'login' ? 'active' : ''}`}
-                onClick={() => setMode('login')}
-              >
-                Sign In
-              </div>
-              <div
-                className={`auth-tab ${mode === 'signup' ? 'active' : ''}`}
-                onClick={() => setMode('signup')}
-              >
-                Create Account
-              </div>
-            </div>
-          )}
+          {/* Right Side: Form (Standard Modal content) */}
+          <div className="auth-right-form">
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              style={{
+                position: 'absolute',
+                top: 16,
+                right: 16,
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-body)',
+                cursor: 'pointer',
+                padding: 4,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background-color 0.2s',
+                zIndex: 10,
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              <X size={20} />
+            </button>
 
-          {/* Auth Form */}
-          <form onSubmit={handleSubmit}>
-            {mode === 'signup' && (
+            {/* Logo and title (Only show text/description, main logo sits in the branding bar on desktop) */}
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+              {/* Show logo on mobile/tablet, hide on desktop >= 1024px since left branding has it */}
+              <div 
+                className="auth-mobile-logo"
+                style={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem', 
+                  fontSize: '1.4rem', 
+                  fontWeight: 800, 
+                  color: 'var(--text-heading)', 
+                  marginBottom: '0.6rem' 
+                }}
+              >
+                <style dangerouslySetInnerHTML={{__html: `
+                  @media (min-width: 1024px) {
+                    .auth-mobile-logo { display: none !important; }
+                  }
+                `}} />
+                <RefreshCcw size={26} style={{ color: 'var(--primary)' }} strokeWidth={2.5} />
+                <span>WordFlow <span style={{ color: 'var(--primary)' }}>Global</span></span>
+              </div>
+              <p style={{ fontSize: '1rem', color: 'var(--text-body)', lineHeight: 1.5 }}>
+                {mode === 'login' && 'Sign in to access your dashboard & history'}
+                {mode === 'signup' && 'Create an account to start saving content'}
+                {mode === 'forgot' && 'Reset your password to regain access'}
+              </p>
+            </div>
+
+            {/* Switcher Tabs */}
+            {mode !== 'forgot' && (
+              <div style={{ display: 'flex', marginBottom: '1.75rem', borderBottom: '1px solid var(--border)' }}>
+                <div
+                  className={`auth-tab ${mode === 'login' ? 'active' : ''}`}
+                  onClick={() => setMode('login')}
+                >
+                  Sign In
+                </div>
+                <div
+                  className={`auth-tab ${mode === 'signup' ? 'active' : ''}`}
+                  onClick={() => setMode('signup')}
+                >
+                  Create Account
+                </div>
+              </div>
+            )}
+
+            {/* Auth Form */}
+            <form onSubmit={handleSubmit}>
+              {mode === 'signup' && (
+                <div className="auth-input-group">
+                  <User size={18} className="auth-icon" />
+                  <input
+                    type="text"
+                    placeholder="Full Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="auth-input"
+                  />
+                </div>
+              )}
+
               <div className="auth-input-group">
-                <User size={18} className="auth-icon" />
+                <Mail size={18} className="auth-icon" />
                 <input
-                  type="text"
-                  placeholder="Full Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  type="email"
+                  placeholder="Email Address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                   className="auth-input"
                 />
               </div>
-            )}
 
-            <div className="auth-input-group">
-              <Mail size={18} className="auth-icon" />
-              <input
-                type="email"
-                placeholder="Email Address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="auth-input"
-              />
-            </div>
-
-            {mode !== 'forgot' && (
-              <>
-                <div className="auth-input-group">
-                  <Lock size={18} className="auth-icon" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    className="auth-input"
-                    style={{ paddingRight: '42px' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: 'absolute',
-                      right: 12,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--text-body)',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-
-                {/* Password Strength Checker for Signup */}
-                {mode === 'signup' && password && (
-                  <div style={{ marginBottom: '1.25rem', marginTop: '-0.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '0.85rem', color: 'var(--text-body)' }}>Password Strength:</span>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: strength.color }}>{strength.label}</span>
-                    </div>
-                    <div style={{ width: '100%', height: 5, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 2.5, overflow: 'hidden' }}>
-                      <div style={{ width: strength.percent, height: '100%', backgroundColor: strength.color, transition: 'all 0.3s' }} />
-                    </div>
-                  </div>
-                )}
-
-                {mode === 'login' && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', marginTop: '-0.25rem' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem', color: 'var(--text-body)', userSelect: 'none' }}>
-                      <input
-                        type="checkbox"
-                        checked={rememberMe}
-                        onChange={(e) => setRememberMe(e.target.checked)}
-                        style={{ cursor: 'pointer', width: '16px', height: '16px', margin: 0 }}
-                      />
-                      Remember Me
-                    </label>
-                    <span
+              {mode !== 'forgot' && (
+                <>
+                  <div className="auth-input-group">
+                    <Lock size={18} className="auth-icon" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="auth-input"
+                      style={{ paddingRight: '42px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
                       style={{
-                        fontSize: '0.95rem',
-                        color: 'var(--primary)',
+                        position: 'absolute',
+                        right: 12,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-body)',
                         cursor: 'pointer',
-                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
                       }}
-                      onClick={() => setMode('forgot')}
                     >
-                      Forgot Password?
-                    </span>
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
-                )}
-              </>
-            )}
 
-            {error && (
-              <div style={{
-                color: '#ef4444',
-                fontSize: '0.95rem',
-                fontWeight: 600,
-                textAlign: 'center',
-                marginBottom: '1.25rem',
-                marginTop: '0.5rem'
-              }}>
-                {error}
-              </div>
-            )}
+                  {/* Password Strength Checker for Signup */}
+                  {mode === 'signup' && password && (
+                    <div style={{ marginBottom: '1.25rem', marginTop: '-0.5rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-body)' }}>Password Strength:</span>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: strength.color }}>{strength.label}</span>
+                      </div>
+                      <div style={{ width: '100%', height: 5, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 2.5, overflow: 'hidden' }}>
+                        <div style={{ width: strength.percent, height: '100%', backgroundColor: strength.color, transition: 'all 0.3s' }} />
+                      </div>
+                    </div>
+                  )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '14px',
-                borderRadius: 12,
-                border: 'none',
-                background: 'var(--primary)',
-                color: '#fff',
-                fontWeight: 600,
-                fontSize: '1.05rem',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                opacity: loading ? 0.8 : 1,
-                marginTop: '0.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)',
-              }}
-            >
-              {loading && <span className="spinner" style={{ border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', width: 14, height: 14, display: 'inline-block', animation: 'spin 1s linear infinite' }} />}
-              {loading ? 'Processing...' : mode === 'login' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Send Reset Link'}
-            </button>
-          </form>
+                  {mode === 'login' && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', marginTop: '-0.25rem' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem', color: 'var(--text-body)', userSelect: 'none' }}>
+                        <input
+                          type="checkbox"
+                          checked={rememberMe}
+                          onChange={(e) => setRememberMe(e.target.checked)}
+                          style={{ cursor: 'pointer', width: '16px', height: '16px', margin: 0 }}
+                        />
+                        Remember Me
+                      </label>
+                      <span
+                        style={{
+                          fontSize: '0.95rem',
+                          color: 'var(--primary)',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                        }}
+                        onClick={() => setMode('forgot')}
+                      >
+                        Forgot Password?
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
 
-          {/* Google Sign-In UI Button */}
-          {mode !== 'forgot' && (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', gap: '10px' }}>
-                <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }} />
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-body)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Or continue with</span>
-                <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }} />
-              </div>
+              {error && (
+                <div style={{
+                  color: '#ef4444',
+                  fontSize: '0.95rem',
+                  fontWeight: 600,
+                  textAlign: 'center',
+                  marginBottom: '1.25rem',
+                  marginTop: '0.5rem'
+                }}>
+                  {error}
+                </div>
+              )}
 
               <button
-                type="button"
-                onClick={() => setShowGoogleHelp(true)}
+                type="submit"
+                disabled={loading}
                 style={{
                   width: '100%',
                   padding: '14px',
                   borderRadius: 12,
-                  border: '1px solid var(--border)',
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  color: 'var(--text-heading)',
+                  border: 'none',
+                  background: 'var(--primary)',
+                  color: '#fff',
                   fontWeight: 600,
-                  fontSize: '1rem',
-                  cursor: 'pointer',
+                  fontSize: '1.05rem',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.8 : 1,
+                  marginTop: '0.5rem',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '0.5rem',
-                  transition: 'background-color 0.2s',
+                  boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.02)'}
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
-                </svg>
-                Google Account
+                {loading && <span className="spinner" style={{ border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', width: 14, height: 14, display: 'inline-block', animation: 'spin 1s linear infinite' }} />}
+                {loading ? 'Processing...' : mode === 'login' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Send Reset Link'}
               </button>
-            </>
-          )}
+            </form>
 
-          {/* Small text to switch */}
-          <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.95rem', color: 'var(--text-body)' }}>
-            {mode === 'login' && (
+            {/* Google Sign-In UI Button */}
+            {mode !== 'forgot' && (
               <>
-                Don't have an account?{' '}
-                <span
-                  style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}
-                  onClick={() => setMode('signup')}
+                <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', gap: '10px' }}>
+                  <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }} />
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-body)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Or continue with</span>
+                  <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }} />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleHelp(true)}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: 12,
+                    border: '1px solid var(--border)',
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    color: 'var(--text-heading)',
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    transition: 'background-color 0.2s',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.02)'}
                 >
-                  Sign Up
-                </span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                  </svg>
+                  Google Account
+                </button>
               </>
             )}
-            {mode === 'signup' && (
-              <>
-                Already have an account?{' '}
+
+            {/* Small text to switch */}
+            <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.95rem', color: 'var(--text-body)' }}>
+              {mode === 'login' && (
+                <>
+                  Don't have an account?{' '}
+                  <span
+                    style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}
+                    onClick={() => setMode('signup')}
+                  >
+                    Sign Up
+                  </span>
+                </>
+              )}
+              {mode === 'signup' && (
+                <>
+                  Already have an account?{' '}
+                  <span
+                    style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}
+                    onClick={() => setMode('login')}
+                  >
+                    Sign In
+                  </span>
+                </>
+              )}
+              {mode === 'forgot' && (
                 <span
                   style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}
                   onClick={() => setMode('login')}
                 >
-                  Sign In
+                  Back to Sign In
                 </span>
-              </>
-            )}
-            {mode === 'forgot' && (
-              <span
-                style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}
-                onClick={() => setMode('login')}
-              >
-                Back to Sign In
-              </span>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
