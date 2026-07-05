@@ -1,5 +1,16 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+// Enforce JWT_SECRET configuration in production environments
+if (!process.env.JWT_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('❌ FATAL ERROR: JWT_SECRET environment variable is not defined.');
+    process.exit(1);
+  } else {
+    console.warn('⚠️ WARNING: JWT_SECRET environment variable is not defined. Using temporary insecure fallback key.');
+  }
+}
+
 process.env.MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
 const express = require('express');
 const cors = require('cors');
@@ -44,15 +55,22 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5174',
   'http://localhost:5174',
+  'https://ai-content-creation-and-translation.vercel.app',
 ];
 app.use(cors({
   origin: (origin, callback) => {
+    // Secure CORS settings: Only allow specific preview environments matching the project domain.
+    // Let general .vercel.app domain through in non-production environments to avoid blockages.
+    const isAllowedVercel = origin && (
+      origin === 'https://ai-content-creation-and-translation.vercel.app' ||
+      /^https:\/\/ai-content-creation-and-translation-[a-z0-9-]+-swapnit18s-projects\.vercel\.app$/.test(origin)
+    );
+
     if (
       !origin || 
       allowedOrigins.includes(origin) || 
-      origin.endsWith('.vercel.app') || 
-      origin.includes('vercel.app') ||
-      process.env.VERCEL === '1'
+      isAllowedVercel ||
+      (process.env.NODE_ENV !== 'production' && (origin.endsWith('.vercel.app') || origin.includes('vercel.app')))
     ) {
       return callback(null, true);
     }

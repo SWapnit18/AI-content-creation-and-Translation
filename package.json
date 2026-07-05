@@ -13,13 +13,14 @@
   "dependencies": {
     "@google/genai": "^1.50.1",
     "axios": "^1.15.2",
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.4.1",
+    "express-rate-limit": "^8.5.2",
     "express-validator": "^7.0.1",
-    "helmet": "^8.1.0",
+    "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.11.0",
     "mongoose": "^9.5.0",
@@ -28,7 +29,8 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-hot-toast": "^2.6.0",
-    "react-router-dom": "^7.14.2"
+    "react-router-dom": "^7.14.2",
+    "validator": "^13.15.35"
   },
   "devDependencies": {
     "concurrently": "^8.2.0"

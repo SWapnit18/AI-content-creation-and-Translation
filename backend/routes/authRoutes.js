@@ -9,7 +9,11 @@ const sendEmail = require('../utils/sendEmail');
 
 // Helper to generate JWT
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret_wordflow', {
+  const secret = process.env.JWT_SECRET;
+  if (!secret && process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET is not configured in production environment');
+  }
+  return jwt.sign({ id }, secret || 'fallback_secret_wordflow', {
     expiresIn: process.env.JWT_EXPIRES_IN || '30d',
   });
 };
@@ -101,7 +105,7 @@ router.post(
         message: 'Account created. Verification link sent.',
       };
 
-      if (!emailResult.sent) {
+      if (!emailResult.sent && process.env.NODE_ENV !== 'production') {
         response.message = 'Account created. SMTP not configured, verification link logged to console.';
         response.verifyToken = verificationToken;
         response.verifyUrl = verifyUrl;
@@ -247,7 +251,7 @@ router.post(
       };
 
       // In development or when using mock fallback, return the token in the response for easy API testing
-      if (!emailResult.sent) {
+      if (!emailResult.sent && process.env.NODE_ENV !== 'production') {
         response.message = 'SMTP not configured. Reset link logged to console.';
         response.resetToken = resetToken;
         response.resetUrl = resetUrl;
@@ -395,7 +399,7 @@ router.post('/resend-verification', protect, async (req, res) => {
       message: 'Verification link resent successfully.',
     };
 
-    if (!emailResult.sent) {
+    if (!emailResult.sent && process.env.NODE_ENV !== 'production') {
       response.message = 'Verification email logged. SMTP not configured, link logged to console.';
       response.verifyToken = verificationToken;
       response.verifyUrl = verifyUrl;

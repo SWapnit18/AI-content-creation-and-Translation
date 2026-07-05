@@ -16,7 +16,11 @@ const protect = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_wordflow');
+    const secret = process.env.JWT_SECRET;
+    if (!secret && process.env.NODE_ENV === 'production') {
+      return res.status(500).json({ success: false, message: 'Server configuration error: JWT Secret is not configured' });
+    }
+    const decoded = jwt.verify(token, secret || 'fallback_secret_wordflow');
     req.user = await User.findById(decoded.id).select('-password');
     if (!req.user) {
       return res.status(401).json({ success: false, message: 'User not found' });
@@ -42,7 +46,11 @@ const optionalAuth = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_wordflow');
+    const secret = process.env.JWT_SECRET;
+    if (!secret && process.env.NODE_ENV === 'production') {
+      return next();
+    }
+    const decoded = jwt.verify(token, secret || 'fallback_secret_wordflow');
     req.user = await User.findById(decoded.id).select('-password');
     next();
   } catch (error) {
