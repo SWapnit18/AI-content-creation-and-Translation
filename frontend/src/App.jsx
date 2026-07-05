@@ -12,7 +12,7 @@ import Contact from './components/Contact';
 import AuthModal from './components/AuthModal';
 import Dashboard from './components/Dashboard';
 
-import { translateText, generateCreativeContent, improveWriting, resetPassword, verifyEmail } from './services/api';
+import { translateText, generateCreativeContent, improveWriting, resetPassword, verifyEmail, getMe } from './services/api';
 import { Lock, RefreshCcw, Eye, EyeOff } from 'lucide-react';
 
 import './styles/index.css';
@@ -61,6 +61,7 @@ function AppContent() {
       const params = new URLSearchParams(window.location.search);
       const resetTokenParam = params.get('resetToken');
       const verifyTokenParam = params.get('verifyToken');
+      const googleTokenParam = params.get('googleToken');
 
       let cleanUrlNeeded = false;
 
@@ -79,6 +80,20 @@ function AppContent() {
           }
         } catch (err) {
           toast.error(err.message || 'Email verification failed. The link might be invalid or expired.');
+        }
+      }
+
+      if (googleTokenParam) {
+        cleanUrlNeeded = true;
+        localStorage.setItem('token', googleTokenParam);
+        try {
+          const res = await getMe();
+          if (res.success) {
+            loginWithToken(googleTokenParam, res.user);
+          }
+        } catch (err) {
+          localStorage.removeItem('token');
+          toast.error('Google login failed: ' + err.message);
         }
       }
 

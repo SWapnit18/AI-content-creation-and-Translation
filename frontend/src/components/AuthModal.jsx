@@ -20,6 +20,12 @@ export default function AuthModal({ isOpen, onClose }) {
 
   const { login, signup } = useAuth();
 
+  const handleGoogleLogin = () => {
+    const isProduction = typeof window !== 'undefined' && !window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1');
+    const backendBase = isProduction ? window.location.origin : 'http://localhost:5000';
+    window.location.href = `${backendBase}/api/auth/google`;
+  };
+
   // Reset states when modal is opened, closed, or switched mode
   useEffect(() => {
     setError('');
@@ -516,7 +522,7 @@ export default function AuthModal({ isOpen, onClose }) {
 
                 <button
                   type="button"
-                  onClick={() => setShowGoogleHelp(true)}
+                  onClick={handleGoogleLogin}
                   style={{
                     width: '100%',
                     padding: '14px',

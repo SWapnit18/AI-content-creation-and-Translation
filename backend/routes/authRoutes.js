@@ -412,4 +412,124 @@ router.post('/resend-verification', protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/auth/google
+// @desc    Redirect to Google OAuth consent page
+// @access  Public
+router.get('/google', (req, res) => {
+  const client_id = process.env.GOOGLE_CLIENT_ID;
+  if (!client_id) {
+    console.error('GOOGLE_CLIENT_ID is not configured');
+    return res.status(500).send('Server configuration error: Google client ID is missing.');
+  }
+
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5000';
+  const redirect_uri = `${protocol}://${host}/api/auth/google/callback`;
+
+  const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${client_id}&redirect_uri=${encodeURIComponent(
+    redirect_uri
+  )}&response_type=code&scope=${encodeURIComponent('profile email')}&prompt=select_account`;
+
+  res.redirect(oauthUrl);
+});
+
+// @route   GET /api/auth/google/callback
+// @desc    Google OAuth callback endpoint
+// @access  Public
+router.get('/google/callback', async (req, res) => {
+  const { code } = req.query;
+  if (!code) {
+    return res.status(400).send('OAuth callback error: authorization code is missing.');
+  }
+
+  try {
+    const client_id = process.env.GOOGLE_CLIENT_ID;
+    const client_secret = process.env.GOOGLE_CLIENT_SECRET;
+    if (!client_id || !client_secret) {
+      console.error('Google credentials not configured');
+      return res.status(500).send('Server configuration error: Google credentials are missing.');
+    }
+
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5000';
+    const redirect_uri = `${protocol}://${host}/api/auth/google/callback`;
+
+    // 1. Exchange authorization code for Google access token
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        code,
+        client_id,
+        client_secret,
+        redirect_uri,
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    const tokenData = await tokenResponse.json();
+    if (!tokenResponse.ok) {
+      console.error('Google token exchange failed:', tokenData);
+      return res.status(400).send(`Google OAuth error: ${tokenData.error_description || 'Failed to exchange code.'}`);
+    }
+
+    const { access_token } = tokenData;
+
+    // 2. Retrieve user profile using the access token
+    const profileResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    const profileData = await profileResponse.json();
+    if (!profileResponse.ok) {
+      console.error('Failed to fetch user profile:', profileData);
+      return res.status(400).send('Google OAuth error: Failed to retrieve user profile.');
+    }
+
+    const { email, name } = profileData;
+    if (!email) {
+      return res.status(400).send('Google OAuth error: Google did not return email address.');
+    }
+
+    // 3. Find or create user in MongoDB
+    let user = await User.findOne({ email });
+    if (user) {
+      // User exists. Set isVerified to true since Google verified their email.
+      if (!user.isVerified) {
+        user.isVerified = true;
+        await user.save();
+      }
+    } else {
+      // Create new user with random hashed password
+      const randomPassword = crypto.randomBytes(16).toString('hex');
+      user = await User.create({
+        name: name || 'Google User',
+        email,
+        password: randomPassword,
+        isVerified: true,
+      });
+    }
+
+    // 4. Generate local JWT token for user session
+    const localToken = generateToken(user._id);
+
+    // 5. Redirect back to frontend
+    // Use CLIENT_URL env var or fall back to localhost:5174 (development) or relative protocol root.
+    let frontendUrl = process.env.CLIENT_URL;
+    if (!frontendUrl) {
+      const isLocalHost = host.includes('localhost') || host.includes('127.0.0.1');
+      frontendUrl = isLocalHost ? 'http://localhost:5174' : `${protocol}://${req.headers['x-forwarded-host'] || host}`;
+    }
+
+    res.redirect(`${frontendUrl}?googleToken=${localToken}`);
+  } catch (error) {
+    console.error('Google OAuth callback error:', error);
+    res.status(500).send('Server error during Google OAuth callback.');
+  }
+});
+
 module.exports = router;
