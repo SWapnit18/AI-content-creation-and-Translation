@@ -6,6 +6,7 @@ import {
 import { getHistory, deleteHistory, updateHistory, getAnalytics, resendVerification } from '../services/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import MongoChartsEmbed from './MongoChartsEmbed';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -630,6 +631,9 @@ export default function Dashboard() {
           {loadingAnalytics ? 'Loading analytics insights...' : 'Generate some content to populate your dashboard insights!'}
         </div>
       )}
+
+      {/* MongoDB Charts Dashboard Embed */}
+      <MongoChartsEmbed />
 
       {/* Control Filters Bar */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem' }}>
