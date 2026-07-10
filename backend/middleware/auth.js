@@ -17,6 +17,7 @@ const protect = async (req, res, next) => {
 
   try {
     const secret = process.env.JWT_SECRET;
+    console.log('protect middleware: verifying with secret prefix:', secret ? secret.substring(0, 4) + '...' : 'fallback', 'length:', secret ? secret.length : 0);
     if (!secret && process.env.NODE_ENV === 'production') {
       return res.status(500).json({ success: false, message: 'Server configuration error: JWT Secret is not configured' });
     }

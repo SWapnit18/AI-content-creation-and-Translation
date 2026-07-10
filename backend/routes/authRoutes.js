@@ -10,6 +10,7 @@ const sendEmail = require('../utils/sendEmail');
 // Helper to generate JWT
 const generateToken = (id) => {
   const secret = process.env.JWT_SECRET;
+  console.log('generateToken: signing with secret prefix:', secret ? secret.substring(0, 4) + '...' : 'fallback', 'length:', secret ? secret.length : 0);
   if (!secret && process.env.NODE_ENV === 'production') {
     throw new Error('JWT_SECRET is not configured in production environment');
   }

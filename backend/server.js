@@ -1,5 +1,8 @@
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+// Only load .env file in non-production (local dev). On Vercel, env vars are set via the dashboard.
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config({ path: path.join(__dirname, '.env') });
+}
 
 // Enforce JWT_SECRET configuration in production environments
 if (!process.env.JWT_SECRET) {
