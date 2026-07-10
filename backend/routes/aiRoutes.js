@@ -250,26 +250,32 @@ router.get('/history', protect, async (req, res) => {
     
     // Filter history specifically by authenticated user
     const filter = { userId: req.user._id };
-    if (type) {
+
+    // Allowlist type filter to prevent NoSQL injection via query param
+    const ALLOWED_TYPES = ['translation', 'creative', 'improve', 'quote'];
+    if (type && ALLOWED_TYPES.includes(type)) {
       filter.type = type;
     }
     
-    // Add text search capabilities
-    if (search) {
+    // Safe search: escape special regex chars so user input is literal
+    if (search && typeof search === 'string' && search.trim().length > 0) {
+      const safeSearch = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { inputText: { $regex: search, $options: 'i' } },
-        { outputText: { $regex: search, $options: 'i' } },
+        { title: { $regex: safeSearch, $options: 'i' } },
+        { inputText: { $regex: safeSearch, $options: 'i' } },
+        { outputText: { $regex: safeSearch, $options: 'i' } },
       ];
     }
     
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10));
+    const skip = (pageNum - 1) * limitNum;
 
     const [records, total] = await Promise.all([
       ContentGeneration.find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(parseInt(limit))
+        .limit(limitNum)
         .select('-ipAddress'),
       ContentGeneration.countDocuments(filter),
     ]);
@@ -279,9 +285,9 @@ router.get('/history', protect, async (req, res) => {
       records,
       pagination: { 
         total, 
-        page: parseInt(page), 
-        limit: parseInt(limit), 
-        pages: Math.ceil(total / limit) 
+        page: pageNum, 
+        limit: limitNum, 
+        pages: Math.ceil(total / limitNum) 
       },
     });
   } catch (err) {

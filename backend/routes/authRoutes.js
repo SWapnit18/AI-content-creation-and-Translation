@@ -10,13 +10,25 @@ const sendEmail = require('../utils/sendEmail');
 // Helper to generate JWT
 const generateToken = (id) => {
   const secret = process.env.JWT_SECRET;
-  console.log('generateToken: signing with secret prefix:', secret ? secret.substring(0, 4) + '...' : 'fallback', 'length:', secret ? secret.length : 0);
   if (!secret && process.env.NODE_ENV === 'production') {
     throw new Error('JWT_SECRET is not configured in production environment');
   }
   return jwt.sign({ id }, secret || 'fallback_secret_wordflow', {
     expiresIn: process.env.JWT_EXPIRES_IN || '30d',
   });
+};
+
+// Helper to escape HTML special chars to prevent XSS in email templates
+const escapeHtml = (str) => String(str)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#039;');
+
+// Helper to get the trusted frontend base URL — never from request headers
+const getClientUrl = () => {
+  return process.env.CLIENT_URL || 'http://localhost:5174';
 };
 
 const handleValidation = (req, res, next) => {
@@ -64,19 +76,18 @@ router.post(
       // Generate token
       const token = generateToken(user._id);
 
-      // Determine client URL dynamically
-      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-      const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5173';
-      const clientUrl = `${protocol}://${host}`;
+      // Use trusted CLIENT_URL env var — never build from request headers (host header injection fix)
+      const clientUrl = getClientUrl();
       const verifyUrl = `${clientUrl}?verifyToken=${verificationToken}`;
 
       // Email message details
       const subject = 'Verify Your Email - WordFlow Global';
       const message = `Welcome to WordFlow Global!\n\nPlease verify your email address by clicking on the link below, or pasting it into your browser:\n\n${verifyUrl}\n`;
+      const safeName = escapeHtml(user.name);
       const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
           <h2 style="color: #6366f1; text-align: center;">Welcome to WordFlow Global!</h2>
-          <p>Hello ${user.name},</p>
+          <p>Hello ${safeName},</p>
           <p>Thank you for signing up! Please verify your email address by clicking the button below:</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${verifyUrl}" style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Verify Email</a>
@@ -216,10 +227,8 @@ router.post(
 
       await user.save();
 
-      // Determine client URL dynamically
-      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-      const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5173';
-      const clientUrl = `${protocol}://${host}`;
+      // Use trusted CLIENT_URL env var — never build from request headers (host header injection fix)
+      const clientUrl = getClientUrl();
       const resetUrl = `${clientUrl}?resetToken=${resetToken}`;
 
       // Email message details
@@ -366,19 +375,18 @@ router.post('/resend-verification', protect, async (req, res) => {
     user.verificationToken = verificationToken;
     await user.save();
 
-    // Determine client URL dynamically
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-    const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5173';
-    const clientUrl = `${protocol}://${host}`;
+    // Use trusted CLIENT_URL env var — never build from request headers (host header injection fix)
+    const clientUrl = getClientUrl();
     const verifyUrl = `${clientUrl}?verifyToken=${verificationToken}`;
 
     // Email message details
     const subject = 'Verify Your Email - WordFlow Global';
     const message = `Please verify your email address by clicking on the link below, or pasting it into your browser:\n\n${verifyUrl}\n`;
+    const safeResendName = escapeHtml(user.name);
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
         <h2 style="color: #6366f1; text-align: center;">Verify Your Email</h2>
-        <p>Hello ${user.name},</p>
+        <p>Hello ${safeResendName},</p>
         <p>Please verify your email address by clicking the button below to secure your account:</p>
         <div style="text-align: center; margin: 30px 0;">
           <a href="${verifyUrl}" style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Verify Email</a>
@@ -451,9 +459,11 @@ router.get('/google/callback', async (req, res) => {
       return res.status(500).send('Server configuration error: Google credentials are missing.');
     }
 
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-    const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5000';
-    const redirect_uri = `${protocol}://${host}/api/auth/google/callback`;
+    // Build redirect_uri from trusted env — avoids host header injection
+    const apiBaseUrl = process.env.API_BASE_URL || (process.env.CLIENT_URL
+      ? process.env.CLIENT_URL.replace(/\/+$/, '')
+      : `${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5000'}`);
+    const redirect_uri = `${apiBaseUrl}/api/auth/google/callback`;
 
     // 1. Exchange authorization code for Google access token
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -518,13 +528,8 @@ router.get('/google/callback', async (req, res) => {
     // 4. Generate local JWT token for user session
     const localToken = generateToken(user._id);
 
-    // 5. Redirect back to frontend
-    // Use CLIENT_URL env var or fall back to localhost:5174 (development) or relative protocol root.
-    let frontendUrl = process.env.CLIENT_URL;
-    if (!frontendUrl) {
-      const isLocalHost = host.includes('localhost') || host.includes('127.0.0.1');
-      frontendUrl = isLocalHost ? 'http://localhost:5174' : `${protocol}://${req.headers['x-forwarded-host'] || host}`;
-    }
+    // 5. Redirect back to frontend using trusted CLIENT_URL only
+    const frontendUrl = getClientUrl();
 
     res.redirect(`${frontendUrl}?googleToken=${localToken}`);
   } catch (error) {

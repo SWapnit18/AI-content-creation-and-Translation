@@ -79,6 +79,9 @@ export function AuthProvider({ children }) {
     toast.success('Logged out successfully');
   };
 
+  // loginWithToken: stores a JWT (not a password) in browser storage.
+  // localStorage is used only when rememberMe=true (user's explicit choice).
+  // sessionStorage is used otherwise — token is cleared on tab close.
   const loginWithToken = (token, userData, rememberMe = true) => {
     if (rememberMe) {
       localStorage.setItem('token', token);
