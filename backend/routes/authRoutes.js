@@ -449,6 +449,16 @@ router.post('/resend-verification', protect, async (req, res) => {
   }
 });
 
+function getGoogleRedirectUri(req) {
+  if (process.env.GOOGLE_REDIRECT_URI) {
+    return process.env.GOOGLE_REDIRECT_URI;
+  }
+  const host = req.headers['x-forwarded-host'] || req.headers['host'] || 'localhost:5000';
+  const proto = req.headers['x-forwarded-proto'] || (req.protocol === 'https' ? 'https' : 'http');
+  const finalProto = (host.includes('localhost') || host.includes('127.0.0.1')) ? 'http' : 'https';
+  return `${finalProto}://${host}/api/auth/google/callback`;
+}
+
 // @route   GET /api/auth/google
 // @desc    Redirect to Google OAuth consent page
 // @access  Public
@@ -459,10 +469,7 @@ router.get('/google', (req, res) => {
     return res.status(500).send('Server configuration error: Google client ID is missing.');
   }
 
-  const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-  const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5000';
-  const finalProto = (host.includes('localhost') || host.includes('127.0.0.1')) ? proto : 'https';
-  const redirect_uri = `${finalProto}://${host}/api/auth/google/callback`;
+  const redirect_uri = getGoogleRedirectUri(req);
 
   const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${client_id}&redirect_uri=${encodeURIComponent(
     redirect_uri
@@ -488,10 +495,7 @@ router.get('/google/callback', async (req, res) => {
       return res.status(500).send('Server configuration error: Google credentials are missing.');
     }
 
-    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-    const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5000';
-    const finalProto = (host.includes('localhost') || host.includes('127.0.0.1')) ? proto : 'https';
-    const redirect_uri = `${finalProto}://${host}/api/auth/google/callback`;
+    const redirect_uri = getGoogleRedirectUri(req);
 
     // 1. Exchange authorization code for Google access token
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
