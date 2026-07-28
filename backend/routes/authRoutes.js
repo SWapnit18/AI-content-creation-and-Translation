@@ -173,7 +173,7 @@ router.post(
       const adminList = ['patelswapnit@gmail.com', 'admin@wordflow.com', 'swapnit18@gmail.com'];
       if (user.role !== 'admin' && adminList.includes(user.email.toLowerCase())) {
         user.role = 'admin';
-        await user.save();
+        await User.updateOne({ _id: user._id }, { role: 'admin' });
       }
 
       // Generate token
@@ -192,7 +192,7 @@ router.post(
       });
     } catch (error) {
       console.error('Login error:', error);
-      res.status(500).json({ success: false, message: 'Server error during login' });
+      res.status(500).json({ success: false, message: error.message || 'Server error during login' });
     }
   }
 );
