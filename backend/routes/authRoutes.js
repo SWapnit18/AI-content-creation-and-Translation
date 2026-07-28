@@ -488,11 +488,10 @@ router.get('/google/callback', async (req, res) => {
       return res.status(500).send('Server configuration error: Google credentials are missing.');
     }
 
-    // Build redirect_uri from trusted env — avoids host header injection
-    const apiBaseUrl = process.env.API_BASE_URL || (process.env.CLIENT_URL
-      ? process.env.CLIENT_URL.replace(/\/+$/, '')
-      : `${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5000'}`);
-    const redirect_uri = `${apiBaseUrl}/api/auth/google/callback`;
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5000';
+    const finalProto = (host.includes('localhost') || host.includes('127.0.0.1')) ? proto : 'https';
+    const redirect_uri = `${finalProto}://${host}/api/auth/google/callback`;
 
     // 1. Exchange authorization code for Google access token
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -541,7 +540,7 @@ router.get('/google/callback', async (req, res) => {
       // User exists. Set isVerified to true since Google verified their email.
       if (!user.isVerified) {
         user.isVerified = true;
-        await user.save();
+        await User.updateOne({ _id: user._id }, { isVerified: true });
       }
     } else {
       // Create new user with random hashed password
