@@ -96,6 +96,18 @@ app.use('/api', apiLimiter);
 app.use('/api/ai', aiLimiter);
 app.use('/api/contact', contactLimiter);
 
+// ─── Ensure DB Connection Before API Routes ────────────────────────────────
+app.use('/api', async (req, res, next) => {
+  if (req.path === '/health') return next();
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('DB Connection error:', err.message);
+    return res.status(503).json({ success: false, message: 'Database connection currently unavailable. Please try again in a moment.' });
+  }
+});
+
 // ─── Routes ────────────────────────────────────────────────────────────────
 app.use('/api/ai', aiRoutes);
 app.use('/api/contact', contactRoutes);

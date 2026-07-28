@@ -1,8 +1,14 @@
 const mongoose = require('mongoose');
 
+// Cache connection across serverless invocations / local restarts
+let isConnected = false;
+
 const connectDB = async () => {
+  if (isConnected || mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
   try {
-    // Build URI from parts (avoids dotenvx mangling special chars like # in passwords)
     const defaultUri = 'mongodb+srv://patelswapnit_db_user:MongoPass2024@cluster0.iecgwuk.mongodb.net/ai-content-creation?retryWrites=true&w=majority';
     let uri = process.env.MONGO_URI || process.env.MONGODB_URI;
 
@@ -15,15 +21,19 @@ const connectDB = async () => {
     }
 
     if (!uri) {
-      console.log('ℹ️ MONGO_URI env not found. Using default cluster connection.');
       uri = defaultUri;
     }
 
-    const conn = await mongoose.connect(uri);
+    const conn = await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
+    isConnected = true;
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    return conn;
   } catch (error) {
     console.error(`❌ Error connecting to MongoDB: ${error.message}`);
-    // Do not exit process for local demonstration
+    throw error;
   }
 };
 
