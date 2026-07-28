@@ -63,8 +63,14 @@ function AppContent() {
       const resetTokenParam = params.get('resetToken');
       const verifyTokenParam = params.get('verifyToken');
       const googleTokenParam = params.get('googleToken');
+      const authErrorParam = params.get('authError');
 
       let cleanUrlNeeded = false;
+
+      if (authErrorParam) {
+        cleanUrlNeeded = true;
+        toast.error(authErrorParam);
+      }
 
       if (resetTokenParam) {
         setResetToken(resetTokenParam);

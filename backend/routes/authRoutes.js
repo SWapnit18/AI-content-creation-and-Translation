@@ -511,7 +511,8 @@ router.get('/google/callback', async (req, res) => {
     const tokenData = await tokenResponse.json();
     if (!tokenResponse.ok) {
       console.error('Google token exchange failed:', tokenData);
-      return res.status(400).send(`Google OAuth error: ${tokenData.error_description || 'Failed to exchange code.'}`);
+      const frontendUrl = getClientUrl();
+      return res.redirect(`${frontendUrl}?authError=${encodeURIComponent(tokenData.error_description || 'Google authorization code expired or already used. Please click Continue with Google again.')}`);
     }
 
     const { access_token } = tokenData;
@@ -526,12 +527,14 @@ router.get('/google/callback', async (req, res) => {
     const profileData = await profileResponse.json();
     if (!profileResponse.ok) {
       console.error('Failed to fetch user profile:', profileData);
-      return res.status(400).send('Google OAuth error: Failed to retrieve user profile.');
+      const frontendUrl = getClientUrl();
+      return res.redirect(`${frontendUrl}?authError=${encodeURIComponent('Failed to retrieve user profile from Google.')}`);
     }
 
     const { email, name } = profileData;
     if (!email) {
-      return res.status(400).send('Google OAuth error: Google did not return email address.');
+      const frontendUrl = getClientUrl();
+      return res.redirect(`${frontendUrl}?authError=${encodeURIComponent('Google did not return a valid email address.')}`);
     }
 
     // 3. Find or create user in MongoDB
@@ -562,7 +565,8 @@ router.get('/google/callback', async (req, res) => {
     res.redirect(`${frontendUrl}?googleToken=${localToken}`);
   } catch (error) {
     console.error('Google OAuth callback error:', error);
-    res.status(500).send('Server error during Google OAuth callback.');
+    const frontendUrl = getClientUrl();
+    res.redirect(`${frontendUrl}?authError=${encodeURIComponent('Server error during Google OAuth callback. Please try again.')}`);
   }
 });
 
