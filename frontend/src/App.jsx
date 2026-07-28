@@ -11,6 +11,7 @@ import QuoteSection from './components/QuoteSection';
 import Contact from './components/Contact';
 import AuthModal from './components/AuthModal';
 import Dashboard from './components/Dashboard';
+import AdminDashboard from './components/AdminDashboard';
 
 import { translateText, generateCreativeContent, improveWriting, resetPassword, verifyEmail, getMe } from './services/api';
 import { Lock, RefreshCcw, Eye, EyeOff } from 'lucide-react';
@@ -174,7 +175,9 @@ function AppContent() {
       />
 
       <main style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', minHeight: 'calc(100vh - 200px)' }}>
-        {currentView === 'dashboard' && isAuthenticated ? (
+        {currentView === 'admin' && isAuthenticated && user?.role === 'admin' ? (
+          <AdminDashboard />
+        ) : currentView === 'dashboard' && isAuthenticated ? (
           <Dashboard />
         ) : (
           <>

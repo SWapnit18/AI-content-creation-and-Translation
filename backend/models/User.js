@@ -33,6 +33,11 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
     verificationToken: String,
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
+    },
   },
   { timestamps: true }
 );

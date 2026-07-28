@@ -38,9 +38,14 @@ const sendEmail = async (options) => {
       html: options.html,
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`✉️ Email successfully sent to ${options.email}. Message ID: ${info.messageId}`);
-    return { success: true, sent: true };
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`✉️ Email successfully sent to ${options.email}. Message ID: ${info.messageId}`);
+      return { success: true, sent: true };
+    } catch (err) {
+      console.error(`⚠️ SMTP error sending email to ${options.email}:`, err.message);
+      return { success: true, sent: false, error: err.message };
+    }
   } else {
     // Fallback: SMTP is not configured. Log the email structure to console
     console.log('\n=================== MOCK EMAIL SENDER ===================');

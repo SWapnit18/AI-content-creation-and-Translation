@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun, RefreshCcw, LayoutDashboard, Home, LogOut, User, Menu, X } from 'lucide-react';
+import { Moon, Sun, RefreshCcw, LayoutDashboard, Home, LogOut, User, Menu, X, ShieldCheck } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -45,7 +45,7 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth }) {
         </div>
         
         {/* Desktop Navigation links */}
-        <div className="nav-links" style={{ display: 'flex', gap: '2.5rem', alignItems: 'center', fontWeight: '500', color: 'var(--text-heading)' }}>
+        <div className="nav-links" style={{ display: 'flex', gap: '2rem', alignItems: 'center', fontWeight: '500', color: 'var(--text-heading)' }}>
           {currentView === 'home' ? (
             <>
               <a href="#translation" onClick={(e) => { e.preventDefault(); handleNavClick('translation'); }} className="nav-link" style={{ color: 'var(--text-heading)', fontSize: '1.05rem' }}>Translate</a>
@@ -93,6 +93,30 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth }) {
             >
               <LayoutDashboard size={18} />
               Dashboard
+            </button>
+          )}
+
+          {/* Admin Panel Link (Only visible for Admins) */}
+          {isAuthenticated && user?.role === 'admin' && (
+            <button 
+              onClick={() => setCurrentView(currentView === 'admin' ? 'home' : 'admin')} 
+              style={{ 
+                background: 'rgba(99, 102, 241, 0.12)', 
+                border: '1px solid rgba(99, 102, 241, 0.3)', 
+                color: currentView === 'admin' ? 'var(--primary)' : 'var(--primary)', 
+                padding: '6px 14px',
+                borderRadius: '20px',
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.4rem', 
+                fontSize: '0.95rem', 
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+              className="nav-link"
+            >
+              <ShieldCheck size={16} />
+              Admin Portal
             </button>
           )}
         </div>
@@ -241,6 +265,30 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth }) {
             >
               <LayoutDashboard size={18} style={{ marginRight: '0.2rem' }} />
               Dashboard
+            </button>
+          )}
+
+          {isAuthenticated && user?.role === 'admin' && (
+            <button 
+              onClick={() => { setCurrentView(currentView === 'admin' ? 'home' : 'admin'); setIsMenuOpen(false); }} 
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                color: currentView === 'admin' ? 'var(--primary)' : 'var(--text-heading)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem', 
+                fontSize: '1.05rem', 
+                fontWeight: 500,
+                cursor: 'pointer',
+                padding: '8px 16px',
+                width: '100%',
+                textAlign: 'left'
+              }}
+              className="nav-link"
+            >
+              <ShieldCheck size={18} style={{ marginRight: '0.2rem', color: 'var(--primary)' }} />
+              Admin Portal
             </button>
           )}
 

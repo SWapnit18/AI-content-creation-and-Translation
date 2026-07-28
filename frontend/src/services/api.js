@@ -41,8 +41,15 @@ api.interceptors.response.use(
       return Promise.reject(serverError);
     }
 
-    // 3. Extract the custom backend message if available
-    const message = error.response.data?.message || error.message || 'An unexpected error occurred';
+    // 3. Extract custom backend message or express-validator errors array
+    let message = error.response.data?.message;
+    if (!message && Array.isArray(error.response.data?.errors)) {
+      message = error.response.data.errors.map((e) => e.msg).join(', ');
+    }
+    if (!message) {
+      message = error.message || 'An unexpected error occurred';
+    }
+
     const customError = new Error(message);
     customError.status = error.response.status;
     customError.response = error.response;
@@ -136,5 +143,36 @@ export const deleteHistory = async (id) => {
 
 export const getAnalytics = async () => {
   const response = await api.get('/ai/analytics');
+  return response.data;
+};
+
+// ─── Admin APIs ─────────────────────────────────────────────────────────
+export const getAdminStats = async () => {
+  const response = await api.get('/admin/stats');
+  return response.data;
+};
+
+export const getAdminUsers = async ({ page = 1, limit = 10, search = '' } = {}) => {
+  const response = await api.get('/admin/users', { params: { page, limit, search } });
+  return response.data;
+};
+
+export const updateUserRole = async (id, role) => {
+  const response = await api.put(`/admin/users/${id}/role`, { role });
+  return response.data;
+};
+
+export const deleteUser = async (id) => {
+  const response = await api.delete(`/admin/users/${id}`);
+  return response.data;
+};
+
+export const getAdminContacts = async ({ page = 1, limit = 10, search = '' } = {}) => {
+  const response = await api.get('/admin/contacts', { params: { page, limit, search } });
+  return response.data;
+};
+
+export const deleteContact = async (id) => {
+  const response = await api.delete(`/admin/contacts/${id}`);
   return response.data;
 };

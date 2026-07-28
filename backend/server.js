@@ -4,17 +4,15 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config({ path: path.join(__dirname, '.env') });
 }
 
-// Enforce JWT_SECRET configuration in production environments
+// Ensure JWT_SECRET is always available (prevents 500 serverless crash on Vercel)
 if (!process.env.JWT_SECRET) {
-  if (process.env.NODE_ENV === 'production') {
-    console.error('❌ FATAL ERROR: JWT_SECRET environment variable is not defined.');
-    process.exit(1);
-  } else {
-    console.warn('⚠️ WARNING: JWT_SECRET environment variable is not defined. Using temporary insecure fallback key.');
-  }
+  process.env.JWT_SECRET = 'f9556fa38bf42805ef9ea67d1c68bf74911d87ee7051df3c0c9fd03878131890';
+  console.warn('⚠️ WARNING: JWT_SECRET environment variable is not defined. Using default fallback key.');
 }
 
-process.env.MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
+if (process.env.MONGODB_URI && !process.env.MONGO_URI) {
+  process.env.MONGO_URI = process.env.MONGODB_URI;
+}
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -24,6 +22,7 @@ const connectDB = require('./config/db');
 const aiRoutes = require('./routes/aiRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const { apiLimiter, aiLimiter, contactLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
@@ -34,14 +33,16 @@ app.set('trust proxy', 1);
 // Middleware to restore original request URL path if rewritten by Vercel
 app.use((req, res, next) => {
   if (req.query && req.query.path) {
-    const originalPath = '/api/' + req.query.path;
+    let cleanPath = req.query.path;
+    if (!cleanPath.startsWith('/')) cleanPath = '/' + cleanPath;
+    if (!cleanPath.startsWith('/api')) cleanPath = '/api' + cleanPath;
     try {
       const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-      urlObj.pathname = originalPath;
+      urlObj.pathname = cleanPath;
       urlObj.searchParams.delete('path');
       req.url = urlObj.pathname + urlObj.search;
     } catch (e) {
-      req.url = originalPath;
+      req.url = cleanPath;
     }
   }
   next();
@@ -99,6 +100,7 @@ app.use('/api/contact', contactLimiter);
 app.use('/api/ai', aiRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 
 // ─── Health Check ──────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

@@ -9,11 +9,8 @@ const sendEmail = require('../utils/sendEmail');
 
 // Helper to generate JWT
 const generateToken = (id) => {
-  const secret = process.env.JWT_SECRET;
-  if (!secret && process.env.NODE_ENV === 'production') {
-    throw new Error('JWT_SECRET is not configured in production environment');
-  }
-  return jwt.sign({ id }, secret || 'fallback_secret_wordflow', {
+  const secret = process.env.JWT_SECRET || 'f9556fa38bf42805ef9ea67d1c68bf74911d87ee7051df3c0c9fd03878131890';
+  return jwt.sign({ id }, secret, {
     expiresIn: process.env.JWT_EXPIRES_IN || '30d',
   });
 };
@@ -65,12 +62,24 @@ router.post(
       // Generate verification token
       const verificationToken = crypto.randomBytes(20).toString('hex');
 
+      // Helper to check if email should be admin
+      const isAdminEmail = (e) => {
+        const adminList = ['patelswapnit@gmail.com', 'admin@wordflow.com', 'swapnit18@gmail.com'];
+        if (process.env.ADMIN_EMAILS) {
+          adminList.push(...process.env.ADMIN_EMAILS.split(',').map(s => s.trim().toLowerCase()));
+        }
+        return adminList.includes(e.toLowerCase());
+      };
+
+      const userRole = isAdminEmail(email) ? 'admin' : 'user';
+
       // Create new user
       const user = await User.create({
         name,
         email,
         password,
         verificationToken,
+        role: userRole,
       });
 
       // Generate token
@@ -112,15 +121,18 @@ router.post(
           id: user._id,
           name: user.name,
           email: user.email,
+          role: user.role,
           isVerified: false,
         },
         message: 'Account created. Verification link sent.',
       };
 
-      if (!emailResult.sent && process.env.NODE_ENV !== 'production') {
-        response.message = 'Account created. SMTP not configured, verification link logged to console.';
-        response.verifyToken = verificationToken;
-        response.verifyUrl = verifyUrl;
+      if (!emailResult.sent) {
+        response.message = 'Account created successfully! Welcome to WordFlow Global.';
+        if (process.env.NODE_ENV !== 'production') {
+          response.verifyToken = verificationToken;
+          response.verifyUrl = verifyUrl;
+        }
       }
 
       res.status(201).json(response);
@@ -157,6 +169,13 @@ router.post(
         return res.status(401).json({ success: false, message: 'Incorrect password' });
       }
 
+      // Auto promote to admin if email matches admin list
+      const adminList = ['patelswapnit@gmail.com', 'admin@wordflow.com', 'swapnit18@gmail.com'];
+      if (user.role !== 'admin' && adminList.includes(user.email.toLowerCase())) {
+        user.role = 'admin';
+        await user.save();
+      }
+
       // Generate token
       const token = generateToken(user._id);
 
@@ -167,6 +186,7 @@ router.post(
           id: user._id,
           name: user.name,
           email: user.email,
+          role: user.role || 'user',
           isVerified: user.isVerified || false,
         },
       });
@@ -182,12 +202,20 @@ router.post(
 // @access  Private
 router.get('/me', protect, async (req, res) => {
   try {
+    // Auto promote to admin if email matches admin list
+    const adminList = ['patelswapnit@gmail.com', 'admin@wordflow.com', 'swapnit18@gmail.com'];
+    if (req.user.role !== 'admin' && adminList.includes(req.user.email.toLowerCase())) {
+      req.user.role = 'admin';
+      await User.updateOne({ _id: req.user._id }, { role: 'admin' });
+    }
+
     res.json({
       success: true,
       user: {
         id: req.user._id,
         name: req.user.name,
         email: req.user.email,
+        role: req.user.role || 'user',
         isVerified: req.user.isVerified || false,
       },
     });
@@ -431,9 +459,10 @@ router.get('/google', (req, res) => {
     return res.status(500).send('Server configuration error: Google client ID is missing.');
   }
 
-  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
   const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:5000';
-  const redirect_uri = `${protocol}://${host}/api/auth/google/callback`;
+  const finalProto = (host.includes('localhost') || host.includes('127.0.0.1')) ? proto : 'https';
+  const redirect_uri = `${finalProto}://${host}/api/auth/google/callback`;
 
   const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${client_id}&redirect_uri=${encodeURIComponent(
     redirect_uri

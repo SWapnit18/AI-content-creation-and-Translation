@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const { body, validationResult } = require('express-validator');
 const Contact = require('../models/Contact');
 
@@ -24,7 +25,7 @@ router.post(
     try {
       const { name, email, subject, message } = req.body;
       
-      if (process.env.MONGO_URI) {
+      if (mongoose.connection.readyState === 1) {
         const contact = new Contact({ name, email, subject, message });
         await contact.save();
       }
