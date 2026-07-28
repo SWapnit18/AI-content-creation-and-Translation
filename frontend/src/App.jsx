@@ -55,7 +55,7 @@ function AppContent() {
   const [resetLoading, setResetLoading] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   
-  const { isAuthenticated, loginWithToken, refreshUser } = useAuth();
+  const { user, isAuthenticated, loginWithToken, refreshUser } = useAuth();
 
   useEffect(() => {
     const handleQueryParams = async () => {
