@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-const isProduction = typeof window !== 'undefined' && !window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1');
-const API_URL = import.meta.env.VITE_API_URL || (isProduction ? '/api' : 'http://localhost:5000/api');
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -28,24 +27,26 @@ api.interceptors.response.use(
   (error) => {
     // 1. Check for complete Network failures
     if (!error.response) {
-      const netError = new Error('Network error. Please check your internet connection.');
+      const netError = new Error('Network error. Please check your internet connection or server status.');
       netError.status = 0;
       return Promise.reject(netError);
     }
-    
-    // 2. Check for Server Error (500)
-    if (error.response.status === 500) {
-      const serverError = new Error('Server error (500). Please try again later.');
-      serverError.status = 500;
-      serverError.response = error.response;
-      return Promise.reject(serverError);
-    }
 
-    // 3. Extract custom backend message or express-validator errors array
+    // 2. Extract custom backend message or express-validator errors array
     let message = error.response.data?.message;
     if (!message && Array.isArray(error.response.data?.errors)) {
       message = error.response.data.errors.map((e) => e.msg).join(', ');
     }
+
+    // 3. Detect Vercel Security Checkpoint or raw HTML error responses
+    if (typeof error.response.data === 'string' && error.response.data.includes('<!DOCTYPE')) {
+      if (error.response.data.includes('Vercel Security Checkpoint')) {
+        message = 'Vercel Security Checkpoint protection is enabled on your deployment. Please disable Attack Mode / Security Checkpoint in Vercel Dashboard Settings.';
+      } else {
+        message = `Server error (${error.response.status}). Please try again later.`;
+      }
+    }
+
     if (!message) {
       message = error.message || 'An unexpected error occurred';
     }
